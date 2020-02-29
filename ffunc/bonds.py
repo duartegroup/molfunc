@@ -15,7 +15,7 @@ def get_avg_bond_length(atom_i_label=None, atom_j_label=None):
     elif key2 in avg_bond_lengths.keys():
         return avg_bond_lengths[key2]
     elif atom_i_label == 'R' or atom_j_label == 'R':
-        return 1.0
+        return 1.2
     else:
         return 1.5
 

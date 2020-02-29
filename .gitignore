@@ -1,6 +1,12 @@
 
 .idea/
 
+build/
+
+dist/
+
+ffunc.egg-info/
+
 ffunc/__pycache__/
 
 .DS_Store

@@ -2,13 +2,14 @@ import numpy as np
 from scipy.spatial import distance_matrix
 from scipy.optimize import minimize
 import networkx as nx
-from copy import deepcopy
 from ffunc.atoms import smiles_to_atoms
 from ffunc.atoms import xyz_file_to_atoms
 from ffunc.bonds import get_avg_bond_length
 from ffunc.atoms import NNAtom
 from ffunc.geom import rotation_matrix
 from ffunc.exceptions import *
+from rdkit import rdBase
+rdBase.DisableLog('rdApp.error')
 
 
 def get_rotated_coords(x, theta, coords):
@@ -28,7 +29,7 @@ def energy_func(x, theta, coords, alt_coords):
 
 class Molecule:
 
-    def _make_graph(self, rel_tolerance=0.25):
+    def _make_graph(self, rel_tolerance=0.2):
         """
         Make the molecular graph from the 'bonds' determined on a distance criteria. No distinction is made between
         single, double etc. bond types
@@ -234,8 +235,6 @@ class FragmentMolecule(Molecule):
         if core_atom is None:
             return
 
-        self.print_xyz_file()
-
         self.nn_atom = self.get_ratom_nearest_neighbour()
         self._delete_r_atom()
 
@@ -284,12 +283,3 @@ class CombinedMolecule(Molecule):
             atoms += fragment_mol.atoms
 
         self.set_atoms(atoms)
-
-
-if __name__ == '__main__':
-
-    methane = CoreMolecule(xyz_filename='/Users/tom/Desktop/methane.xyz', atoms_to_del=[2])
-    joined = CombinedMolecule(core_mol=methane, frag_smiles='[*][N+]([O-])=O')
-    # joined = CombinedMolecule(core_mol=methane, frag_smiles='[*]C')
-    joined.print_xyz_file()
-
