@@ -1,11 +1,9 @@
 # ffunc
-
-*F*ast molecule *func*tionalisation
 ***
 
 ## About
-_ffunc_ is a Python tool for performing fast functionalisation of 3D molecules. Given
-a [.xyz](https://en.wikipedia.org/wiki/XYZ_file_format) file functionalisation is performed
+_ffunc_ is a Python tool for *f*ast *func*tionalisation of 3D molecules. Given a 
+[.xyz](https://en.wikipedia.org/wiki/XYZ_file_format) file functionalisation is performed
 by specifying monovalent atoms in the structure to swap for a set of fragments given as their
 corresponding SMILES strings. Possible use cases include catalyst functionalisation, ligand
 modification and combinatorial molecule generation.
@@ -44,7 +42,7 @@ is required. From Chemdraw
  
 ![alt text](ffunc/common/smiles_example.png)
 
-To modify the 3D benzene structure in _examples/_ by replacing the first hydrogen atom (number 7) with a methly
+To modify the 3D benzene structure in _examples/_ by replacing the first hydrogen atom (number 7) with a methyl
 ```
 ffunc examples/benzene.xyz -a 7 -s C[*]
 ```
