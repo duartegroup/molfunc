@@ -3,10 +3,10 @@
 
 ## About
 _ffunc_ is a Python tool for *f*ast *func*tionalisation of 3D molecules. Given a 
-[.xyz](https://en.wikipedia.org/wiki/XYZ_file_format) file functionalisation is performed
+[.xyz](https://en.wikipedia.org/wiki/XYZ_file_format) file molecular functionalisation is performed
 by specifying monovalent atoms in the structure to swap for a set of fragments given as their
-corresponding SMILES strings. Possible use cases include catalyst functionalisation, ligand
-modification and combinatorial molecule generation.
+corresponding SMILES strings. The energy of the combined molecule is minimised with purely rigid body rotations. 
+Possible use cases include catalyst functionalisation, ligand modification and combinatorial molecule generation.
 
 ***
 ## Installation
@@ -24,6 +24,7 @@ and [NetworkX](https://networkx.github.io) and can be installed easily using a c
 installation with:
 
 ```
+conda config --append channels conda-forge
 conda install --file requirements.txt
 ```
 Finally, install with:
@@ -34,7 +35,7 @@ python setup.py install
 ***
 ## Usage
 _ffunc_ may be imported as a Python module or used directly from the command line (with more limited
-functionality). _ffunc_ is added to your _conda/bin_ folder such that it can be executed anywhere
+functionality). _ffunc_ is added to your _conda/bin_ folder such that it can be executed anywhere.
  
 ### 0. Toluene 
 To functionalise benzene with a methyl generating a toluene molecule the SMILES string of the methyl group 

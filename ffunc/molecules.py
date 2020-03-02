@@ -12,15 +12,17 @@ from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
 
 
-def get_rotated_coords(x, theta, coords):
-    rot_mat = rotation_matrix(axis=x/np.linalg.norm(x), theta=theta)
+def get_rotated_coords(x, coords):
+    """For a vector (x) of x, y, z, theta rotate the coordinates by theta radians in the axis (x, y, z)"""
+    axis, theta = x[:3], x[3]
+    rot_mat = rotation_matrix(axis=axis/np.linalg.norm(axis), theta=theta)
     return [np.matmul(rot_mat, coord) for coord in coords]
 
 
-def energy_func(x, theta, coords, alt_coords):
-    """Evaluate the energy for coords that have been rotated by theta radians in the axis x"""
+def energy_func(x, coords, alt_coords):
+    """Evaluate the energy for coords that have been rotated by theta radians in the axis x. V = Σpairs 1/rij^4"""
 
-    coords = get_rotated_coords(x, theta, coords)
+    coords = get_rotated_coords(x, coords)
     dist_mat = distance_matrix(coords, alt_coords)
     energy = np.sum(np.power(dist_mat, -4))
 
@@ -95,6 +97,7 @@ class Molecule:
         return np.array([atom.coord for atom in self.atoms])
 
     def set_atoms(self, atoms):
+        """Set the atoms (list(ffunc.Atom)) and the number of atoms"""
 
         self.atoms = atoms
         self.n_atoms = len(atoms)
@@ -161,7 +164,6 @@ class CoreMolecule(Molecule):
         return self.set_atoms(atoms=[atom for i, atom in enumerate(self.atoms) if i not in self.datom_idxs])
 
     def __init__(self, name='molecule', xyz_filename=None, smiles=None, atoms_to_del=None):
-
         super(CoreMolecule, self).__init__(name=name, xyz_filename=xyz_filename, smiles=smiles)
 
         # Atom indexes to delete are the atoms minus one as atoms_to_del should not have 0 in the list
@@ -198,7 +200,17 @@ class FragmentMolecule(Molecule):
 
         raise RAtomNotFound
 
-    def minimise_repulsion(self, other_mol, n=50):
+    def minimise_repulsion(self, other_mol, n=100, tolerance=0.1):
+        """
+        Minimise the 'energy' with respect to rigid body rotation of this molecule given some other
+        (core) molecule
+
+        :param other_mol: (ffunc.CoreMolecule)
+        :param n: (int) Number of minimisation to perform as to (hopefully) locate the global minimum
+        :param tolerance: (float) Threshold on the energy minimisation 0.1 is a reasonable comprimise between
+                                  speed and accuracy
+        :return:
+        """
 
         # Get the where the nearest neighbour atom is centered at the origin
         other_coords = other_mol.get_coords() - self.nn_atom.coord
@@ -210,15 +222,14 @@ class FragmentMolecule(Molecule):
 
         for _ in range(n):
 
-            theta, x0 = np.random.uniform(0.0, 2*np.pi), np.random.uniform(0.0, 1.0, size=3)
-            res = minimize(energy_func, x0=x0, args=(theta, coords, other_coords), method='L-BFGS-B')
+            x0 = np.random.uniform(0.0, 2*np.pi, size=4)
+            res = minimize(energy_func, x0=x0, args=(coords, other_coords), method='L-BFGS-B', tol=tolerance)
 
             if res.fun < min_energy:
-                # print('E = ', min_energy)
                 min_energy = res.fun
-                best_x, best_theta = res.x, theta
+                best_x = res.x
 
-        new_coords = get_rotated_coords(x=best_x, theta=best_theta, coords=coords)
+        new_coords = get_rotated_coords(x=best_x, coords=coords)
         for i in range(self.n_atoms):
             self.atoms[i].coord = new_coords[i] + self.nn_atom.coord
 
