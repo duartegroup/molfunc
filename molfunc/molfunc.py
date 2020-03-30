@@ -1,6 +1,6 @@
 import argparse
-from ffunc.molecules import CoreMolecule
-from ffunc.molecules import CombinedMolecule
+from molfunc.molecules import CoreMolecule
+from molfunc.molecules import CombinedMolecule
 
 
 def get_args():

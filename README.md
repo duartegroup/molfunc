@@ -1,8 +1,7 @@
-# ffunc
-***
+# molfunc
 
 ## About
-_ffunc_ is a Python tool for *f*ast *func*tionalisation of 3D molecules. Given a 
+_molfunc_ is a Python tool for *f*ast *func*tionalisation of 3D molecules. Given a
 [.xyz](https://en.wikipedia.org/wiki/XYZ_file_format) file molecular functionalisation is performed
 by specifying monovalent atoms in the structure to swap for a set of fragments given as their
 corresponding SMILES strings. The energy of the combined molecule is minimised with purely rigid body rotations. 
@@ -12,13 +11,13 @@ Possible use cases include catalyst functionalisation, ligand modification and c
 ## Installation
 First, clone this repository:
 ```
-git clone https://github.com/duartegroup/ffunc.git
+git clone https://github.com/duartegroup/molfunc.git
 ```
-and `cd` into the top level ffunc directory:
+and `cd` into the top level molfunc directory:
 ```
-cd ffunc/
+cd molfunc/
 ```
-_ffunc_ depends on [RDKit](https://www.rdkit.org), [numpy](https://numpy.org)/[scipy](https://www.scipy.org) 
+_molfunc_ depends on [RDKit](https://www.rdkit.org), [numpy](https://numpy.org)/[scipy](https://www.scipy.org)
 and [NetworkX](https://networkx.github.io) and can be installed easily using a conda 
 ([anaconda](https://www.anaconda.com/distribution/) or [miniconda](https://docs.conda.io/en/latest/miniconda.html)) 
 installation with:
@@ -34,23 +33,23 @@ python setup.py install
 
 ***
 ## Usage
-_ffunc_ may be imported as a Python module or used directly from the command line (with more limited
-functionality). _ffunc_ is added to your _conda/bin_ folder such that it can be executed anywhere.
+_molfunc_ may be imported as a Python module or used directly from the command line (with more limited
+functionality). _molfunc_ is added to your _conda/bin_ folder such that it can be executed anywhere.
  
 ### 0. Toluene 
 To functionalise benzene with a methyl generating a toluene molecule the SMILES string of the methyl group 
 is required. From Chemdraw
  
-![alt text](ffunc/common/smiles_example.png)
+![alt text](molfunc/common/smiles_example.png)
 
 To modify the 3D benzene structure in _examples/_ by replacing the first hydrogen atom (number 7) with a methyl
 ```
-ffunc examples/benzene.xyz -a 7 -s C[*]
+molfunc examples/benzene.xyz -a 7 -s C[*]
 ```
-which will generate a benzene_mod.xyz file in the _examples/_ directory. Alternatively, in a Python script 
+which will generate a benzene_mod.xyz file in the _examples/_ directory. Alternatively, in a Python script
 
 ```python
-from ffunc import CoreMolecule, CombinedMolecule
+from molfunc import CoreMolecule, CombinedMolecule
 
 benzene = CoreMolecule(xyz_filename='examples/benzene.xyz', atoms_to_del=[7])
 toluene = CombinedMolecule(core_mol=benzene, frag_smiles='C[*]', name='toluene')
@@ -58,10 +57,12 @@ toluene.print_xyz_file()
 ```
 which will generate a more helpfully named toluene.xyz file in the current working directory.
 
+![alt text](molfunc/common/benzene_func.png)
+
 ### 1. _p_-Xylene
 Multiple atoms can be modified with the same fragment from the command line with 
 ```
-ffunc examples/benzene.xyz -a 7 10 -s C[*]
+molfunc examples/benzene.xyz -a 7 10 -s C[*]
 ```
 which swaps two para hydrogens to methyls and generates benzene_mod.xyz as _p_-xylene.
 
@@ -72,12 +73,14 @@ Multiple modifications are available using the Python module. To generate dimeth
 from PH<sub>3</sub> 
 
 ```python
-from ffunc import CoreMolecule, CombinedMolecule
+from molfunc import CoreMolecule, CombinedMolecule
 
 ph3 = CoreMolecule(xyz_filename='examples/PH3.xyz', atoms_to_del=[2, 3, 4])
 dimphp = CombinedMolecule(core_mol=ph3, frag_smiles_list=['C[*]', 'C[*]', '[*]C1=CC=CC=C1'], name='dimphp')
 dimphp.print_xyz_file()
 ```
+
+![alt text](molfunc/common/ph3_func.png)
 
 Note that the functionalisations are made in order so atoms 2 and 3 will be replaced with methyls 
 and atom 4 with a phenyl.

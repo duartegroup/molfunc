@@ -2,7 +2,7 @@ import numpy as np
 import os
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from ffunc.exceptions import *
+from molfunc.exceptions import *
 
 
 class Atom:
@@ -36,7 +36,7 @@ def xyz_file_to_atoms(filename):
     From an .xyz file get a list of atoms
 
     :param filename: (str)
-    :return: (list(ffunc.Atom))
+    :return: (list(molfunc.Atom))
     """
 
     atoms = []
@@ -70,7 +70,7 @@ def smiles_to_atoms(smiles, n_confs=1):
 
     :param smiles: (str)
     :param n_confs: (int)
-    :return: (list(list(ffunc.Atom)) if n_confs > 1 else (list(fffunc.Atom))
+    :return: (list(list(molfunc.Atom)) if n_confs > 1 else (list(fffunc.Atom))
     """
 
     # Generate an RDKit Molecule object, add hydrogens and generate conformers

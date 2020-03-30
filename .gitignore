@@ -10,3 +10,7 @@ ffunc.egg-info/
 ffunc/__pycache__/
 
 .DS_Store
+
+molfunc.egg-info/
+
+molfunc/__pycache__/

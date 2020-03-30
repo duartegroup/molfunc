@@ -2,12 +2,12 @@ import numpy as np
 from scipy.spatial import distance_matrix
 from scipy.optimize import minimize
 import networkx as nx
-from ffunc.atoms import smiles_to_atoms
-from ffunc.atoms import xyz_file_to_atoms
-from ffunc.bonds import get_avg_bond_length
-from ffunc.atoms import NNAtom
-from ffunc.geom import rotation_matrix
-from ffunc.exceptions import *
+from molfunc.atoms import smiles_to_atoms
+from molfunc.atoms import xyz_file_to_atoms
+from molfunc.bonds import get_avg_bond_length
+from molfunc.atoms import NNAtom
+from molfunc.geom import rotation_matrix
+from molfunc.exceptions import *
 from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
 
@@ -97,7 +97,7 @@ class Molecule:
         return np.array([atom.coord for atom in self.atoms])
 
     def set_atoms(self, atoms):
-        """Set the atoms (list(ffunc.Atom)) and the number of atoms"""
+        """Set the atoms (list(molfunc.Atom)) and the number of atoms"""
 
         self.atoms = atoms
         self.n_atoms = len(atoms)
@@ -145,7 +145,7 @@ class CoreMolecule(Molecule):
         Return the nearest neighbour atom to a particular atom to delete (datom)
 
         :param datom_idx: (int) index of the atom to delete
-        :return: (ffunc.NNatom)
+        :return: (molfunc.NNatom)
         """
 
         for (atom_i, atom_j) in self.graph.edges:
@@ -181,7 +181,7 @@ class FragmentMolecule(Molecule):
         """
         Return the nearest neighbour atom to the atom with label 'R'
 
-        :return: (ffunc.NNatom)
+        :return: (molfunc.NNatom)
         """
 
         for (atom_i, atom_j) in self.graph.edges:
@@ -205,7 +205,7 @@ class FragmentMolecule(Molecule):
         Minimise the 'energy' with respect to rigid body rotation of this molecule given some other
         (core) molecule
 
-        :param other_mol: (ffunc.CoreMolecule)
+        :param other_mol: (molfunc.CoreMolecule)
         :param n: (int) Number of minimisation to perform as to (hopefully) locate the global minimum
         :param tolerance: (float) Threshold on the energy minimisation 0.1 is a reasonable comprimise between
                                   speed and accuracy
