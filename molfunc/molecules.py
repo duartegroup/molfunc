@@ -134,11 +134,9 @@ class CoreMolecule(Molecule):
     def _check_datom_idxs(self):
         """Ensure that all the atoms that will be replaced by fragments are monovalent"""
 
-        # self.datom_idxs is None when constructor has atoms_to_del=None
-        if self.datom_idxs is not None:
-            for i in self.datom_idxs:
-                if self.atoms[i].valence > 1:
-                    exit(f'Cannot modify atom {self.atoms[i].label} with valency {self.atoms[i].valence }')
+        for i in self.datom_idxs:
+            if self.atoms[i].valence > 1:
+                exit(f'Cannot modify atom {self.atoms[i].label} with valency {self.atoms[i].valence }')
 
         return None
 
@@ -169,7 +167,7 @@ class CoreMolecule(Molecule):
         super(CoreMolecule, self).__init__(name=name, xyz_filename=xyz_filename, smiles=smiles)
 
         # Atom indexes to delete are the atoms minus one as atoms_to_del should not have 0 in the list
-        self.datom_idxs = [i - 1 for i in atoms_to_del] if atoms_to_del is not None else None
+        self.datom_idxs = [i - 1 for i in atoms_to_del] if atoms_to_del is not None else []
         self._check_datom_idxs()
 
         # Nearest neighbour atoms to those deleted to enable translation of the fragment
