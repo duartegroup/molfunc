@@ -134,9 +134,11 @@ class CoreMolecule(Molecule):
     def _check_datom_idxs(self):
         """Ensure that all the atoms that will be replaced by fragments are monovalent"""
 
-        for i in self.datom_idxs:
-            if self.atoms[i].valence > 1:
-                exit(f'Cannot modify atom {self.atoms[i].label} with valency {self.atoms[i].valence }')
+        # self.datom_idxs is None when constructor has atoms_to_del=None
+        if self.datom_idxs is not None:
+            for i in self.datom_idxs:
+                if self.atoms[i].valence > 1:
+                    exit(f'Cannot modify atom {self.atoms[i].label} with valency {self.atoms[i].valence }')
 
         return None
 
