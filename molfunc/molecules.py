@@ -167,7 +167,7 @@ class CoreMolecule(Molecule):
         super(CoreMolecule, self).__init__(name=name, xyz_filename=xyz_filename, smiles=smiles)
 
         # Atom indexes to delete are the atoms minus one as atoms_to_del should not have 0 in the list
-        self.datom_idxs = [i - 1 for i in atoms_to_del] if atoms_to_del is not None else None
+        self.datom_idxs = [i - 1 for i in atoms_to_del] if atoms_to_del is not None else []
         self._check_datom_idxs()
 
         # Nearest neighbour atoms to those deleted to enable translation of the fragment
