@@ -1,6 +1,22 @@
 import numpy as np
 
 
+def get_rotated_coords(x, coords):
+    """Rotate coordinates by theta radians in an axis
+
+    :param x: (np.ndarray) shape: (4,). [x, y, z, theta]
+    :param coords: (np.ndarray) shape: (n_atoms, 3)
+    :return: rotated coordinates
+    """
+    rot_mat = rotation_matrix(axis=x[:3], theta=x[3])
+
+    def rotate(coord):
+        return np.matmul(rot_mat, coord)
+
+    # Map the matrix multiplication over all atomic coordinates
+    return np.array(list(map(rotate, coords)))
+
+
 def rotation_matrix(axis, theta):
     """
     Return the rotation matrix associated with counterclockwise rotation about

@@ -2,41 +2,29 @@ import numpy as np
 from scipy.spatial import distance_matrix
 from scipy.optimize import minimize
 import networkx as nx
+from molfunc import energy
 from molfunc.atoms import smiles_to_atoms
 from molfunc.atoms import xyz_file_to_atoms
 from molfunc.bonds import get_avg_bond_length
-from molfunc.atoms import NNAtom
-from molfunc.geom import rotation_matrix
+from molfunc.atoms import NNAtom, Atom
+from molfunc.geom import get_rotated_coords
 from molfunc.exceptions import *
+from molfunc.utils import requires_atoms
 from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
-
-
-def get_rotated_coords(x, coords):
-    """For a vector (x) of x, y, z, theta rotate the coordinates by theta radians in the axis (x, y, z)"""
-    axis, theta = x[:3], x[3]
-    rot_mat = rotation_matrix(axis=axis/np.linalg.norm(axis), theta=theta)
-    return [np.matmul(rot_mat, coord) for coord in coords]
-
-
-def energy_func(x, coords, alt_coords):
-    """Evaluate the energy for coords that have been rotated by theta radians in the axis x. V = Σpairs 1/rij^4"""
-
-    coords = get_rotated_coords(x, coords)
-    dist_mat = distance_matrix(coords, alt_coords)
-    energy = np.sum(np.power(dist_mat, -4))
-
-    return energy
 
 
 class Molecule:
 
     def _make_graph(self, rel_tolerance=0.2):
         """
-        Make the molecular graph from the 'bonds' determined on a distance criteria. No distinction is made between
-        single, double etc. bond types
+        Make the molecular graph from the 'bonds' determined on a distance
+        criteria. No distinction is made between single, double etc. bond types
 
-        :param rel_tolerance: (float)
+        :param rel_tolerance: (float) Relative tolerance on what is classed
+                                      as a bond. If a distance is
+                                      < (1 + rel_tolerance) * r_avg
+                                     then they are 'bonded'
         :return: None
         """
 
@@ -44,17 +32,17 @@ class Molecule:
         for i in range(self.n_atoms):
             graph.add_node(i, atom_label=self.atoms[i].label)
 
-        coordinates = self.get_coords()
+        coordinates = self.get_coordinates()
         dist_mat = distance_matrix(coordinates, coordinates)
 
         # Loop over the unique pairs of atoms and add 'bonds'
         for i in range(self.n_atoms):
             for j in range(i+1, self.n_atoms):
 
-                avg_bond_length = get_avg_bond_length(atom_i_label=self.atoms[i].label,
-                                                      atom_j_label=self.atoms[j].label)
+                avg_bond_length = get_avg_bond_length(self.atoms[i].label,
+                                                      self.atoms[j].label)
 
-                # If the distance between atoms i and j are less or equal to 1.2x average length add a 'bond'
+                # If the atoms are close enough add a bond (edge)
                 if dist_mat[i, j] <= avg_bond_length * (1.0 + rel_tolerance):
                     graph.add_edge(i, j)
 
@@ -63,23 +51,26 @@ class Molecule:
         return None
 
     def _set_atomic_valancies(self):
-        """Set the atomic valency for each atom. Double/triple bonds are *not* distinct from single bonds"""
+        """Set the atomic valency for each atom. Double/triple bonds are *not*
+        distinct from single bonds"""
 
-        for (atom_i, atom_j) in self.graph.edges:
-
-            self.atoms[atom_i].valence += 1
-            self.atoms[atom_j].valence += 1
+        for i in range(self.n_atoms):
+            self.atoms[i].valence = len(list(self.graph.neighbors(i)))
 
         return None
 
+    @requires_atoms()
     def translate(self, vec):
         """Translate the molecule by vector (np.ndarray, length 3)"""
+        assert vec.shape == (3,)
+
         for atom in self.atoms:
             atom.translate(vec)
         return None
 
+    @requires_atoms()
     def print_xyz_file(self):
-        """Print a standard xyz file from the Molecule's atoms"""
+        """Print a standard .xyz file from the Molecule's atoms"""
 
         if self.atoms is None or len(self.atoms) == 0:
             raise NoAtomsToPrint
@@ -87,114 +78,168 @@ class Molecule:
         with open(f'{self.name}.xyz', 'w') as xyz_file:
             print(self.n_atoms, '\n', file=xyz_file)
             for atom in self.atoms:
-                x ,y, z = atom.coord
-                print(f'{atom.label:<3}{x:^10.5f}{y:^10.5f}{z:^10.5f}', file=xyz_file)
+                x, y, z = atom.coord
+                print(f'{atom.label:<3}{x:^10.5f}{y:^10.5f}{z:^10.5f}',
+                      file=xyz_file)
 
         return None
 
-    def get_coords(self):
-        """Return a np.ndarray of size n_atoms x 3 containing the xyz coordinates of the molecule"""
+    @requires_atoms()
+    def get_coordinates(self):
+        """Return a n_atoms x 3 shape np.ndarray containing xyz coordinates"""
         return np.array([atom.coord for atom in self.atoms])
 
     def set_atoms(self, atoms):
-        """Set the atoms (list(molfunc.Atom)) and the number of atoms"""
+        """Set the atoms (list(molfunc.atoms.Atom)) and the number of atoms"""
+        assert type(atoms) is list
+        if len(atoms) > 0:
+            assert isinstance(atoms[0], Atom)
 
         self.atoms = atoms
         self.n_atoms = len(atoms)
 
         return None
 
-    def __init__(self, name='molecule', xyz_filename=None, smiles=None, atoms=None):
+    def __init__(self, name='mol', xyz_filename=None, smiles=None, atoms=None):
+        """
+        Base molecule class. Initialised in order of priority: SMILES string,
+        xyz file, atoms
 
-        self.name = name
+        ------------------------ Keyword Arguments ----------------------------
+        :param name: (str)
+
+        :param xyz_filename: (str) .xyz filename (or filepath) from which atoms
+                             will be extracted
+
+        :param smiles: (str) SMILES string defining the molecule from which a
+                       3D structure as atoms are extracted using RDKit
+
+        :param atoms: (list(molfunc.atom.Atom)) List of atoms used to
+                      initialise the molecule
+        """
+        self.name = str(name)
         self.n_atoms = 0
         self.graph = None
         self.atoms = None
 
         if smiles is not None:
+            # Use RDKit to convert SMILES -> atoms
             self.set_atoms(atoms=smiles_to_atoms(smiles))
 
         if xyz_filename is not None:
-            # Initialisation with an xyz file takes precedence over SMILES string
+            # Initialisation with an xyz file takes precedence over SMILES
             self.set_atoms(atoms=xyz_file_to_atoms(xyz_filename))
 
         if atoms is not None:
             self.set_atoms(atoms)
 
-        if self.n_atoms == 0:
-            # Cannot continue if there are no atoms in the molecule..
-            return
-
-        self._make_graph()
-        self._set_atomic_valancies()
+        if self.n_atoms != 0:
+            # If there are atoms in the molecule set the graph and valancies
+            self._make_graph()
+            self._set_atomic_valancies()
 
 
 class CoreMolecule(Molecule):
 
     def _check_datom_idxs(self):
-        """Ensure that all the atoms that will be replaced by fragments are monovalent"""
+        """Ensure that all atoms to be replaced by fragments are monovalent"""
 
         for i in self.datom_idxs:
-            if self.atoms[i].valence > 1:
-                exit(f'Cannot modify atom {self.atoms[i].label} with valency {self.atoms[i].valence }')
 
+            if not 0 < i < self.n_atoms:
+                raise DatomsNotValid(f'Can\'t functionalise an atom {i} - not '
+                                     f'in the list of atoms')
+
+            if self.atoms[i].valence == 1:
+                continue
+
+            raise DatomsNotValid(f'Cannot modify atom {self.atoms[i].label} '
+                                 f'with valency {self.atoms[i].valence}')
         return None
 
-    def get_datom_nearest_neighbour(self, datom_idx):
+    def get_datom_nn(self, datom_idx):
         """
-        Return the nearest neighbour atom to a particular atom to delete (datom)
+        Return the nearest neighbour atom to a particular atom to delete
+        (datom) along with the shift vector e.g. for a datom_idx = 1, the
+        nearest neighbour is C and the vector
+
+            vec -->
+
+           j     i                        atoms:
+           C -- H                               C, 0, 0, 0
+          /                                     H, 1, 0, 0
+        H                                       H, -1, 0, -1
+
 
         :param datom_idx: (int) index of the atom to delete
-        :return: (molfunc.NNatom)
+        :return: (molfunc.atoms.NNatom)
         """
 
-        for (atom_i, atom_j) in self.graph.edges:
+        for (i, j) in self.graph.edges:
 
-            vec = self.atoms[atom_i].coord - self.atoms[atom_j].coord
+            vec = self.atoms[i].coord - self.atoms[j].coord
 
-            if atom_i == datom_idx:
-                return NNAtom(atom=self.atoms[atom_j], shift_vec=vec)
-            if atom_j == datom_idx:
-                return NNAtom(atom=self.atoms[atom_i], shift_vec=-vec)
+            if i == datom_idx:
+                return NNAtom(atom=self.atoms[j], shift_vec=vec)
+            if j == datom_idx:
+                return NNAtom(atom=self.atoms[i], shift_vec=-vec)
 
         return None
 
-    def _delete_atoms(self):
-        """Delete all datoms from the atoms list"""
-        return self.set_atoms(atoms=[atom for i, atom in enumerate(self.atoms) if i not in self.datom_idxs])
+    def _delete_datoms(self):
+        """Remove all datoms from the atoms list and set the atoms"""
+        return self.set_atoms(atoms=[atom for i, atom in enumerate(self.atoms)
+                                     if i not in self.datom_idxs])
 
-    def __init__(self, name='molecule', xyz_filename=None, smiles=None, atoms_to_del=None):
-        super(CoreMolecule, self).__init__(name=name, xyz_filename=xyz_filename, smiles=smiles)
+    def __init__(self, name='mol', xyz_filename=None, smiles=None,
+                 atoms_to_del=None, atoms=None):
+        """
+        Core molecule class
 
-        # Atom indexes to delete are the atoms minus one as atoms_to_del should not have 0 in the list
+        :param name: (str)
+        :param atoms_to_del: (list(int)) List of atom indexes to delete and
+                             swap for a fragment. *Indexed from 1*
+        :param xyz_filename: (str)
+        :param smiles: (str) SMILES string
+        :param atoms: (list(molfunc.atom.Atom)) List of atoms
+        """
+        super().__init__(name, xyz_filename, smiles, atoms)
+
+        # Atom indexes to delete are indexed from 1. molfunc however indexes
+        # atoms from 0 so atoms_to_del are the indexes minus 1
         self.datom_idxs = [i - 1 for i in atoms_to_del] if atoms_to_del is not None else []
         self._check_datom_idxs()
 
-        # Nearest neighbour atoms to those deleted to enable translation of the fragment
-        self.nn_atoms = [self.get_datom_nearest_neighbour(datom_idx) for datom_idx in self.datom_idxs]
-        self._delete_atoms()
+        # Nearest neighbour atoms to those deleted to enable translation of the
+        # fragment
+        self.nn_atoms = [self.get_datom_nn(i) for i in self.datom_idxs]
+
+        # Remove the atoms in the datom_idxs list from the atoms
+        self._delete_datoms()
 
 
 class FragmentMolecule(Molecule):
 
     def get_ratom_nearest_neighbour(self):
         """
-        Return the nearest neighbour atom to the atom with label 'R'
+        Return the nearest neighbour atom to the atom with label 'R' the place
+        holder atom that is deleted when the Fragment and Core molecules are
+        bonded. It needs to be monovalent..
 
-        :return: (molfunc.NNatom)
+        :return: (molfunc.atoms.NNatom)
         """
 
         for (atom_i, atom_j) in self.graph.edges:
 
             if self.atoms[atom_i].label == 'R':
-                if self.atoms[atom_i].valence > 1:
-                    exit('R atoms must have valency 1')
+                if self.atoms[atom_i].valence != 1:
+                    raise RAtomInvalidValence
 
                 return NNAtom(atom=self.atoms[atom_j])
 
             if self.atoms[atom_j].label == 'R':
-                if self.atoms[atom_j].valence > 1:
-                    exit('R atoms must have valency 1')
+                if self.atoms[atom_j].valence != 1:
+                    raise RAtomInvalidValence
 
                 return NNAtom(atom=self.atoms[atom_i])
 
@@ -202,33 +247,37 @@ class FragmentMolecule(Molecule):
 
     def minimise_repulsion(self, other_mol, n=100, tolerance=0.1):
         """
-        Minimise the 'energy' with respect to rigid body rotation of this molecule given some other
-        (core) molecule
+        Minimise the 'energy' with respect to rigid body rotation of this
+        molecule given some other (core) molecule
 
         :param other_mol: (molfunc.CoreMolecule)
-        :param n: (int) Number of minimisation to perform as to (hopefully) locate the global minimum
-        :param tolerance: (float) Threshold on the energy minimisation 0.1 is a reasonable comprimise between
-                                  speed and accuracy
+        :param n: (int) Number of minimisation to perform as to (hopefully)
+                  locate the global minimum
+        :param tolerance: (float) Threshold on the energy minimisation 0.1 is
+                          a reasonable compromise between speed and accuracy
         :return:
         """
+        # Coords where the nearest neighbour atom is centered at the origin
+        other_coords = other_mol.get_coordinates() - self.nn_atom.coord
+        coords = self.get_coordinates() - self.nn_atom.coord
 
-        # Get the where the nearest neighbour atom is centered at the origin
-        other_coords = other_mol.get_coords() - self.nn_atom.coord
-
-        coords = self.get_coords() - self.nn_atom.coord
-
-        min_energy = 9999999.9
-        best_x, best_theta = None, None
+        # Set up initial parameters
+        min_energy = best_x = None
 
         for _ in range(n):
 
             x0 = np.random.uniform(0.0, 2*np.pi, size=4)
-            res = minimize(energy_func, x0=x0, args=(coords, other_coords), method='L-BFGS-B', tol=tolerance)
 
-            if res.fun < min_energy:
+            # Minimise repulsion between coords and the other_coords
+            # TODO analytic derivative
+            res = minimize(energy.repulsion, x0=x0, args=(coords, other_coords),
+                           method='L-BFGS-B', tol=tolerance)
+
+            if min_energy is None or res.fun < min_energy:
                 min_energy = res.fun
                 best_x = res.x
 
+        # Set the new coordinates, with the best x array (lowest repulsion)
         new_coords = get_rotated_coords(x=best_x, coords=coords)
         for i in range(self.n_atoms):
             self.atoms[i].coord = new_coords[i] + self.nn_atom.coord
@@ -239,58 +288,119 @@ class FragmentMolecule(Molecule):
         """Delete the atom with label 'R' from the atoms"""
         return self.set_atoms(atoms=[atom for atom in self.atoms if atom.label != 'R'])
 
-    def __init__(self, name='molecule', xyz_filename=None, smiles=None, core_atom=None):
-        super(FragmentMolecule, self).__init__(name=name, xyz_filename=xyz_filename, smiles=smiles)
-
-        # To manipulate as a fragment there needs to be a core atom to translate to
-        if core_atom is None:
-            return
-
-        self.nn_atom = self.get_ratom_nearest_neighbour()
-        self._delete_r_atom()
+    def shift_to_core_atom(self, core_atom):
+        """Given a core atom (molfunc.atoms.NNAtom) shift the fragment so the
+        R atom nearest neighbour is the ideal length away from the core atom"""
 
         # Translate so the fragment nn atom is on top of the core atom
         self.translate(vec=core_atom.coord - self.nn_atom.coord)
 
         # Translate so the fragment has is the correct bond distance away
-        ideal_bond_length = get_avg_bond_length(atom_i_label=core_atom.label, atom_j_label=self.nn_atom.label)
+        ideal_bond_length = get_avg_bond_length(atom_i_label=core_atom.label,
+                                                atom_j_label=self.nn_atom.label)
         self.translate(vec=core_atom.shift_vec * ideal_bond_length)
 
-        # Update the nn_atom coord as it will be used as the origin for rotation
+        # Update nn_atom coord as it will be used as the origin for rotation
         self.nn_atom.coord = core_atom.coord + core_atom.shift_vec * ideal_bond_length
+
+        return None
+
+    def __init__(self, name='mol', xyz_filename=None, smiles=None,
+                 core_atom=None, atoms=None):
+        """
+        Fragment molecule class
+
+        e.g. for a methyl self.atoms should be:
+            C, 0, 0, 0
+            R, 1, 0, 1
+            H -1, 0, 1
+            H 0, 1, -1
+            H 0, -1, -1
+
+        where the R atom will be removed and replaced for the core molecule.
+        The C atom will be the nn_atom (closest to R)
+
+        :param name: (str)
+        :param core_atom: (molfunc.atoms.NNAtom) The atom on the core molecule
+                          to which this fragment will be attached
+        :param xyz_filename: (str)
+        :param smiles: (str) SMILES string
+        :param atoms: (list(molfunc.atom.Atom)) List of atoms
+        """
+        super().__init__(name, xyz_filename, smiles, atoms)
+
+        self.nn_atom = self.get_ratom_nearest_neighbour()
+        self._delete_r_atom()
+
+        # To manipulate as a fragment there needs to be a core atom to
+        # translate to
+        if core_atom is not None:
+            self.shift_to_core_atom(core_atom)
 
 
 class CombinedMolecule(Molecule):
 
-    def _check_fragment_smiles_list(self):
-        """The number of fragments smiles in the list *must* be equal to the number of deleted atoms"""
-        if len(self.frag_smiles_list) != self.n_fragments_to_add:
-            raise FragmentSMILESListMalformatted
+    def build(self):
+        """Build the combined molecule by iterating through self.fragments
+        fragments minimising the repulsion to the core mol at each point"""
 
-    def __init__(self, core_mol, frag_smiles=None, frag_smiles_list=None, name='molecule'):
+        if len(self.fragments) == 0:
+            raise CombinationFailed('No fragment(s)')
 
-        super(CombinedMolecule, self).__init__(name=name)
-        self.core_mol = core_mol
-        self.n_fragments_to_add = len(self.core_mol.datom_idxs)
+        atoms = self.core_mol.atoms.copy()
 
-        if frag_smiles_list is not None:
-            self.frag_smiles_list = frag_smiles_list
-            self._check_fragment_smiles_list()
-
-        elif frag_smiles is not None:
-            # If the full list of fragment SMILES is not specified then populate with the number of atoms
-            # that have been deleted from the CoreMolecule
-            self.frag_smiles_list = self.n_fragments_to_add * [frag_smiles]
-
-        else:
-            exit('Could not create combined molecule')
-
-        atoms = self.core_mol.atoms
-
-        for i, fragment_smiles in enumerate(self.frag_smiles_list):
-            fragment_mol = FragmentMolecule(smiles=fragment_smiles, core_atom=core_mol.nn_atoms[i])
+        for i, fragment_mol in enumerate(self.fragments):
+            fragment_mol.shift_to_core_atom(self.core_mol.nn_atoms[i])
             fragment_mol.minimise_repulsion(other_mol=self.core_mol)
 
             atoms += fragment_mol.atoms
 
         self.set_atoms(atoms)
+        return None
+
+    def __init__(self, core_mol, frag_smiles=None, frag_smiles_list=None,
+                 name='mol', fragment=None, fragments=None):
+        """
+        Combined molecule class
+
+        Fragments can be added from SMILES strings (e.g. C[*]), a list of
+        SMILES strings (if the core atom is functionalised more than once),
+        a FragmentMolecule or a list of FragmentMolecules again if there is
+        more than 1 functionalisation to be performed
+
+        :param name: (str)
+        :param core_mol: (molfunc.molecules.CoreMolecule)
+        :param frag_smiles: (str)
+        :param frag_smiles_list: (list(str))
+        :param fragment: (molfunc.molecules.FragmentMolecule)
+        :param fragments: (list(molfunc.molecules.FragmentMolecule))
+        """
+        super().__init__(name=name)
+
+        self.core_mol = core_mol
+        self.n_fragments_to_add = len(self.core_mol.datom_idxs)
+
+        if self.n_fragments_to_add == 0:
+            raise CombinationFailed('Core molecule had no datoms')
+
+        self.fragments = []
+        if frag_smiles is not None:
+            self.fragments = self.n_fragments_to_add * [FragmentMolecule(smiles=frag_smiles)]
+
+        if frag_smiles_list is not None:
+            self.fragments = [FragmentMolecule(smiles=smiles) for smiles in frag_smiles_list]
+
+        if fragment is not None:
+            assert isinstance(fragment, FragmentMolecule)
+            self.fragments = self.n_fragments_to_add * [fragment]
+
+        if fragments is not None:
+            assert all(isinstance(fr, FragmentMolecule) for fr in fragments)
+            self.fragments = fragments
+
+        if len(self.fragments) != self.n_fragments_to_add:
+            raise CombinationFailed('Number of fragments is not equal to the'
+                                    'number of fragments to add (core datoms)')
+
+        if self.n_fragments_to_add > 0:
+            self.build()

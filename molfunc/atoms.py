@@ -8,57 +8,87 @@ from molfunc.exceptions import *
 class Atom:
 
     def __repr__(self):
-        return f'[{self.label}, {self.coord[0]:.4f}, {self.coord[1]:.4f}, {self.coord[2]:.4f}]'
+        x, y, z = self.coord
+        return f'[{self.label}, {x:.3f}, {y:.3f}, {z:.3f}]'
 
     def translate(self, vec):
+        """Shift the atom in 3D space by a vector (np.ndarray) length 3"""
         self.coord += vec
 
-    def __init__(self, atomic_symbol, x, y, z):
+    def __init__(self, atomic_symbol, x=0.0, y=0.0, z=0.0, coord=None):
+        """
+        Atom positioned in 3D space
 
-        self.label = atomic_symbol
-        self.coord = np.array([x, y, z])
+        :param atomic_symbol: (str) Atomic symbol of this atom e.g. 'C' or 'Pd'
+        :param x: (float) x coordinate of the atom
+        :param y: (float)
+        :param z: (float)
 
+        :param coord: (np.ndarray)
+        """
+        self.label = str(atomic_symbol)
+
+        if coord is not None:
+            assert coord.shape == (3,)
+            self.coord = coord
+
+        else:
+            self.coord = np.array([float(x), float(y), float(z)])
+
+        # Atomic valence e.g. 4 for carbon in methane
         self.valence = 0
 
 
 class NNAtom(Atom):
 
     def __init__(self, atom, shift_vec=None):
-        super(NNAtom, self).__init__(atomic_symbol=atom.label, x=atom.coord[0], y=atom.coord[1],
-                                     z=atom.coord[2])
+        """
+        Nearest neighbour atom
 
-        if shift_vec is not None:
-            self.shift_vec = shift_vec / np.linalg.norm(shift_vec)      # Ensure the vector is normalised
+        :param atom: (molfunc.atoms.Atom)
+        :param shift_vec: (np.ndarray) length 3
+        """
+        super().__init__(atomic_symbol=atom.label, coord=atom.coord)
+        self.shift_vec = shift_vec
+
+        if self.shift_vec is not None:
+            # Ensure the vector is normalised
+            self.shift_vec = shift_vec / np.linalg.norm(shift_vec)
 
 
 def xyz_file_to_atoms(filename):
-    """/
+    """
     From an .xyz file get a list of atoms
 
     :param filename: (str)
     :return: (list(molfunc.Atom))
     """
-
     atoms = []
 
     if not os.path.exists(filename):
         raise XYZfileDidNotExist
 
     if not filename.endswith('.xyz'):
-        raise XYZfileWrongFormat
+        raise NotXYZfile
 
-    # Open the file that exists and should(!) be in the correct format
     with open(filename, 'r') as xyz_file:
-        n_atoms = int(xyz_file.readline().split()[0])       # First item in an xyz file is the number of atoms
-        xyz_lines = xyz_file.readlines()[1:n_atoms+1]       # XYZ lines should be the following 2 + n_atoms lines
+        try:
+            # First item in an xyz file is the number of atoms
+            n_atoms = int(xyz_file.readline().split()[0])
+
+            # XYZ lines should be the following 2 + n_atoms lines
+            xyz_lines = xyz_file.readlines()[1:n_atoms+1]
+
+        except (IndexError, ValueError):
+            raise XYZfileMalformatted
 
         for line in xyz_lines:
 
             try:
                 atom_label, x, y, z = line.split()[:4]
-                atoms.append(Atom(atomic_symbol=atom_label, x=float(x), y=float(y), z=float(z)))
+                atoms.append(Atom(atomic_symbol=atom_label, x=x, y=y, z=z))
 
-            except (IndexError, TypeError):
+            except (IndexError, ValueError):
                 raise XYZfileMalformatted
 
     return atoms
@@ -66,33 +96,41 @@ def xyz_file_to_atoms(filename):
 
 def smiles_to_atoms(smiles, n_confs=1):
     """
-    From a SMILES string generate n_confs conformers using RDKit
+    From a SMILES string generate n_confs conformers using RDKit with the
+    ETKDGv2 algorithm
 
     :param smiles: (str)
     :param n_confs: (int)
-    :return: (list(list(molfunc.Atom)) if n_confs > 1 else (list(fffunc.Atom))
+    :return: (list(list(molfunc.atoms.Atom)) if n_confs > 1 else
+             (list(molfunc.atoms.Atom))
     """
-
     # Generate an RDKit Molecule object, add hydrogens and generate conformers
-    mol_obj = Chem.MolFromSmiles(smiles)
-    mol_obj = Chem.AddHs(mol_obj)
-    method = AllChem.ETKDGv2()
-    method.pruneRmsThresh = 0.3
-    conf_ids = list(AllChem.EmbedMultipleConfs(mol_obj, numConfs=n_confs, params=method))
+    try:
+        mol_obj = Chem.MolFromSmiles(smiles)
+        mol_obj = Chem.AddHs(mol_obj)
+        method = AllChem.ETKDGv2()
+        method.pruneRmsThresh = 0.3
+        conf_ids = list(AllChem.EmbedMultipleConfs(mol_obj, numConfs=n_confs,
+                                                   params=method))
+    except:
+        # RDKit can raise unhelpful exceptions
+        raise RDKitFailed
 
-    # If n_confs > 1 then generate a list of Atoms
+    # If n_confs > 1 then append to this list the list of Atoms
     atoms_list = []
 
     for i in range(len(conf_ids)):
-        mol_block_lines = Chem.MolToMolBlock(mol_obj, confId=conf_ids[i]).split('\n')
+        mol_block_lines = Chem.MolToMolBlock(mol_obj,
+                                             confId=conf_ids[i]).split('\n')
         atoms = []
 
+        # Get the atomic symbols and atomic coordinates from the block
         for line in mol_block_lines:
-            split_line = line.split()
-            if len(split_line) == 16:
-                atom_label, x, y, z = split_line[3], split_line[0], split_line[1], split_line[2]
+            items = line.split()
+            if len(items) == 16:
+                atom_label, x, y, z = items[3], items[0], items[1], items[2]
 
-                atoms.append(Atom(atomic_symbol=atom_label, x=float(x), y=float(y), z=float(z)))
+                atoms.append(Atom(atomic_symbol=atom_label, x=x, y=y, z=z))
 
         # If only one conformer is requested then only return a list of atoms
         if n_confs == 1:
