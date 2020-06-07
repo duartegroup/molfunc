@@ -1,7 +1,9 @@
+[![Build Status](https://travis-ci.org/duartegroup/molfunc.svg?branch=master)](https://travis-ci.org/duartegroup/molfunc)[![codecov](https://codecov.io/gh/duartegroup/molfunc/branch/master/graph/badge.svg)](https://codecov.io/gh/duartegroup/molfunc)[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 # molfunc
 
 ## About
-_molfunc_ is a Python tool for *f*ast *func*tionalisation of 3D molecules. Given a
+_molfunc_ is a Python tool for fast *func*tionalisation of 3D molecules. Given a
 [.xyz](https://en.wikipedia.org/wiki/XYZ_file_format) file molecular functionalisation is performed
 by specifying monovalent atoms in the structure to swap for a set of fragments given as their
 corresponding SMILES strings. The energy of the combined molecule is minimised with purely rigid body rotations. 
