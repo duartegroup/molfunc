@@ -344,8 +344,9 @@ class CombinedMolecule(Molecule):
         """Build the combined molecule by iterating through self.fragments
         fragments minimising the repulsion to the core mol at each point"""
 
-        if len(self.fragments) == 0:
-            raise CombinationFailed('No fragment(s)')
+        if len(self.fragments) != self.n_fragments_to_add:
+            raise CombinationFailed('Number of fragments is not equal to the'
+                                    'number of fragments to add (core datoms)')
 
         atoms = self.core_mol.atoms.copy()
 
@@ -378,7 +379,7 @@ class CombinedMolecule(Molecule):
         super().__init__(name=name)
 
         self.core_mol = core_mol
-        self.n_fragments_to_add = len(self.core_mol.datom_idxs)
+        self.n_fragments_to_add = len(core_mol.datom_idxs)
 
         if self.n_fragments_to_add == 0:
             raise CombinationFailed('Core molecule had no datoms')
@@ -398,9 +399,6 @@ class CombinedMolecule(Molecule):
             assert all(isinstance(fr, FragmentMolecule) for fr in fragments)
             self.fragments = fragments
 
-        if len(self.fragments) != self.n_fragments_to_add:
-            raise CombinationFailed('Number of fragments is not equal to the'
-                                    'number of fragments to add (core datoms)')
-
-        if self.n_fragments_to_add > 0:
+        # If there are some fragments then build the combined molecule
+        if len(self.fragments) > 0:
             self.build()

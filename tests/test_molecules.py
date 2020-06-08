@@ -9,11 +9,18 @@ import os
 
 here = os.path.dirname(os.path.abspath(__file__))
 
+# Methane atoms
+atoms = [Atom('C', 1.24788, 0.56457, -1.79703),
+         Atom('H', 2.35728, 0.56457, -1.79703),
+         Atom('H', 0.87808, 0.86789, -2.79804),
+         Atom('H', 0.87807, 1.27982, -1.03385),
+         Atom('H', 0.87807, -0.45398, -1.55920)]
 
-def atoms_are_aliphatic_hydrocarbon(atoms):
+
+def atoms_are_aliphatic_hydrocarbon(atoms_list):
     """Fully saturated hydrocarbon atoms"""
 
-    for atom in atoms:
+    for atom in atoms_list:
         if atom.label == 'H':
             assert atom.valence == 1       # H atoms are bonded to only C
 
@@ -117,11 +124,6 @@ def test_molecule_rotation():
 
 
 def test_core_molecule():
-    atoms = [Atom('C', 1.24788,  0.56457, -1.79703),
-             Atom('H', 2.35728,  0.56457, -1.79703),
-             Atom('H', 0.87808,  0.86789, -2.79804),
-             Atom('H', 0.87807,  1.27982, -1.03385),
-             Atom('H', 0.87807, -0.45398, -1.55920)]
 
     core_mol = CoreMolecule(atoms=atoms)
     # Core molecule with no atoms to delete should retain all atoms
@@ -151,14 +153,14 @@ def test_fragment_molecule():
     # Nearest neighbour to the R atom is C
     assert mol.nn_atom.label == 'C'
 
-    atoms = [Atom('C', 1.24788,  0.56457, -1.79703),
-             Atom('R', 2.35728,  0.56457, -1.79703),
-             Atom('H', 0.87808,  0.86789, -2.79804),
-             Atom('H', 0.87807,  1.27982, -1.03385),
-             Atom('H', 0.87807, -0.45398, -1.55920)]
+    ratoms = [Atom('C', 1.24788, 0.56457, -1.79703),
+              Atom('R', 2.35728, 0.56457, -1.79703),
+              Atom('H', 0.87808, 0.86789, -2.79804),
+              Atom('H', 0.87807, 1.27982, -1.03385),
+              Atom('H', 0.87807, -0.45398, -1.55920)]
 
     # Initialisation with atoms should also work
-    mol = FragmentMolecule(atoms=atoms,
+    mol = FragmentMolecule(atoms=ratoms,
                            core_atom=core_atom)
     assert mol.n_atoms == 4
     assert mol.nn_atom.label == 'C'
@@ -172,12 +174,6 @@ def test_fragment_molecule():
 
 
 def test_combined_molecule():
-
-    atoms = [Atom('C', 1.24788,  0.56457, -1.79703),
-             Atom('H', 2.35728,  0.56457, -1.79703),
-             Atom('H', 0.87808,  0.86789, -2.79804),
-             Atom('H', 0.87807,  1.27982, -1.03385),
-             Atom('H', 0.87807, -0.45398, -1.55920)]
 
     core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2])
 
@@ -195,15 +191,44 @@ def test_combined_molecule():
     mol = CombinedMolecule(core_mol=core_mol, fragments=[fragment_mol])
     assert mol.n_atoms == 8
 
+    # Delete two hydrogens from methae
+    core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2, 3])
+
+    # Propane
+    mol = CombinedMolecule(core_mol=core_mol, frag_smiles='C[*]')
+    assert mol.n_atoms == 11
+
 
 def test_combined_molecule_no_core():
-    atoms = [Atom('C', 1.24788, 0.56457, -1.79703),
-             Atom('H', 2.35728, 0.56457, -1.79703),
-             Atom('H', 0.87808, 0.86789, -2.79804),
-             Atom('H', 0.87807, 1.27982, -1.03385),
-             Atom('H', 0.87807, -0.45398, -1.55920)]
 
     core_mol = CoreMolecule(atoms=atoms)
 
     with pytest.raises(CombinationFailed):
         _ = CombinedMolecule(core_mol=core_mol, frag_smiles='C[*]')
+
+
+def test_combined_molecule_diff_fragements():
+
+    core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2])
+
+    # Can't add two fragments to a molecule with one atom to delete
+    with pytest.raises(CombinationFailed):
+        _ = CombinedMolecule(core_mol=core_mol,
+                             frag_smiles_list=['C[*]', 'C[*]'])
+
+    # Similarly with two atoms to delete and a fragment smiles list of only
+    # one fragment
+    core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2, 3])
+
+    with pytest.raises(CombinationFailed):
+        _ = CombinedMolecule(core_mol=core_mol, frag_smiles_list=['C[*]'])
+
+
+def test_combined_molecule_no_fragments():
+
+    core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2])
+
+    # Should be able to make a combined molecule from a core that has no
+    # atoms to delete, but will add no atoms (Is this the clearest behaviour?)
+    mol = CombinedMolecule(core_mol=core_mol)
+    assert mol.n_atoms == 0

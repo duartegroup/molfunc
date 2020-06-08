@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/duartegroup/molfunc.svg?branch=master)](https://travis-ci.org/duartegroup/molfunc)[![codecov](https://codecov.io/gh/duartegroup/molfunc/branch/master/graph/badge.svg)](https://codecov.io/gh/duartegroup/molfunc)[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/duartegroup/molfunc.svg?branch=master)](https://travis-ci.org/duartegroup/molfunc) [![codecov](https://codecov.io/gh/duartegroup/molfunc/branch/master/graph/badge.svg)](https://codecov.io/gh/duartegroup/molfunc) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 # molfunc
 
@@ -11,25 +11,18 @@ Possible use cases include catalyst functionalisation, ligand modification and c
 
 ***
 ## Installation
-First, clone this repository:
+Clone this repository and `cd` into the top level molfunc directory:
 ```
 git clone https://github.com/duartegroup/molfunc.git
-```
-and `cd` into the top level molfunc directory:
-```
 cd molfunc/
 ```
-_molfunc_ depends on [RDKit](https://www.rdkit.org), [numpy](https://numpy.org)/[scipy](https://www.scipy.org)
-and [NetworkX](https://networkx.github.io) and can be installed easily using a conda 
-([anaconda](https://www.anaconda.com/distribution/) or [miniconda](https://docs.conda.io/en/latest/miniconda.html)) 
-installation with:
+install the Python dependencies using conda  ([anaconda](https://www.anaconda.com/distribution/) or 
+[miniconda](https://docs.conda.io/en/latest/miniconda.html)) 
+and install:
 
 ```
 conda config --append channels conda-forge
 conda install --file requirements.txt
-```
-Finally, install with:
-```
 python setup.py install
 ```
 

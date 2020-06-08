@@ -1,6 +1,9 @@
 from subprocess import Popen
 from molfunc.atoms import xyz_file_to_atoms
+from molfunc.molecules import Molecule
 from molfunc.molfunc import main
+from scipy.spatial import distance_matrix
+import numpy as np
 import sys
 import os
 
@@ -18,6 +21,15 @@ def test_cli():
 
     toluene_atoms = xyz_file_to_atoms(filename=toluene_path)
     assert len(toluene_atoms) == 15
+    toluene = Molecule(atoms=toluene_atoms)
+
+    # Geometry should be sensible.. i.e. min pairwise distance > 0.8 Å
+    # and the maximum < 5 Å
+    toluene_coords = toluene.get_coordinates()
+    dist_mat = distance_matrix(toluene_coords, toluene_coords)
+
+    assert 0.8 < np.min(dist_mat+np.identity(15)) < 5.0
+
     os.remove(toluene_path)
 
 
