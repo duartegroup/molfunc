@@ -16,7 +16,7 @@ rdBase.DisableLog('rdApp.error')
 
 class Molecule:
 
-    def _make_graph(self, rel_tolerance=0.2):
+    def make_graph(self, rel_tolerance=0.2):
         """
         Make the molecular graph from the 'bonds' determined on a distance
         criteria. No distinction is made between single, double etc. bond types
@@ -50,7 +50,7 @@ class Molecule:
 
         return None
 
-    def _set_atomic_valancies(self):
+    def set_atomic_valancies(self):
         """Set the atomic valency for each atom. Double/triple bonds are *not*
         distinct from single bonds"""
 
@@ -135,8 +135,8 @@ class Molecule:
 
         if self.n_atoms != 0:
             # If there are atoms in the molecule set the graph and valancies
-            self._make_graph()
-            self._set_atomic_valancies()
+            self.make_graph()
+            self.set_atomic_valancies()
 
 
 class CoreMolecule(Molecule):

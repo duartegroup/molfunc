@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/duartegroup/molfunc.svg?branch=master)](https://travis-ci.org/duartegroup/molfunc) [![codecov](https://codecov.io/gh/duartegroup/molfunc/branch/master/graph/badge.svg)](https://codecov.io/gh/duartegroup/molfunc) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/duartegroup/molfunc.svg?branch=master)](https://travis-ci.org/duartegroup/molfunc) [![codecov](https://codecov.io/gh/duartegroup/molfunc/branch/master/graph/badge.svg)](https://codecov.io/gh/duartegroup/molfunc) [![PyPI version](https://badge.fury.io/py/molfunc.svg)](https://badge.fury.io/py/molfunc) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 # molfunc
 
@@ -11,7 +11,13 @@ Possible use cases include catalyst functionalisation, ligand modification and c
 
 ***
 ## Installation
-Clone this repository and `cd` into the top level molfunc directory:
+
+If the requirements (rdkit, numpy, scipy, networkx) are already satisfied:
+```
+pip install molfunc
+```
+
+Otherwise, clone this repository and `cd` into the top level molfunc directory:
 ```
 git clone https://github.com/duartegroup/molfunc.git
 cd molfunc/
