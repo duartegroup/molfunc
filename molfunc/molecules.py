@@ -146,7 +146,7 @@ class CoreMolecule(Molecule):
 
         for i in self.datom_idxs:
 
-            if not 0 < i < self.n_atoms:
+            if not 0 <= i < self.n_atoms:
                 raise DatomsNotValid(f'Can\'t functionalise an atom {i} - not '
                                      f'in the list of atoms')
 
