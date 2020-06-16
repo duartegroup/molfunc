@@ -15,6 +15,8 @@ def get_avg_bond_length(atom_i_label=None, atom_j_label=None):
     elif key2 in avg_bond_lengths.keys():
         return avg_bond_lengths[key2]
     elif atom_i_label == 'R' or atom_j_label == 'R':
+        # Max R-X bond length required if a FragmentMolecule is initialised
+        # from a .xyz file (so the molecular graph needs to be generated)
         return 1.2
     else:
         return 1.5

@@ -3,11 +3,19 @@ from molfunc import FragmentMolecule, CombinedMolecule, CoreMolecule
 from molfunc.molecules import get_rotated_coords
 from molfunc.atoms import Atom, NNAtom
 from molfunc.exceptions import *
+from scipy.spatial import distance_matrix
 import numpy as np
 import pytest
 import os
 
 here = os.path.dirname(os.path.abspath(__file__))
+
+
+def coordinates_are_resonable(coords):
+    """Check that there are no very short or very long pairwise distances"""
+    dist_mat = distance_matrix(coords, coords)
+    return 0.8 < np.min(dist_mat + np.identity(len(coords))) < 5.0
+
 
 # Methane atoms
 atoms = [Atom('C', 1.24788, 0.56457, -1.79703),
@@ -116,7 +124,7 @@ def test_molecule_rotation():
                            [6.77881237e-01,  3.60099808e-02, -8.588000e-01],
                            [-8.02449499e-01,  7.46870117e-01, -7.890000e-02]])
 
-    new_coords = get_rotated_coords(x=[0.0, 0.0, 1.0, 3.145], coords=coords)
+    new_coords = get_rotated_coords(rotation=[0.0, 0.0, 1.0, 3.145], coords=coords)
 
     # Check that the new coordinates are close to the expected (rot_coords)
     for i, coord in enumerate(new_coords):
@@ -138,6 +146,12 @@ def test_core_molecule():
 
     with pytest.raises(DatomsNotValid):
         _ = CoreMolecule(atoms=atoms, atoms_to_del=[6])
+
+    # Cannot use a carbon atom in ethane as the atom to delete
+    xyz_path = os.path.join(here, 'data', 'ethane.xyz')
+
+    with pytest.raises(DatomsNotValid):
+        _ = CoreMolecule(name='ethane', xyz_filename=xyz_path, atoms_to_del=[1])
 
 
 def test_fragment_molecule():
@@ -172,6 +186,18 @@ def test_fragment_molecule():
     # The NN atom is also atom 0, so that should also be ~1.5 Å from the origin
     assert 1.4 < np.linalg.norm(mol.atoms[0].coord) < 1.6
 
+    # Cannot generate a fragment from a structure where the R atom has > 1
+    # bonds
+    xyz_path = os.path.join(here, 'data', 'ethane_fragment.xyz')
+    with pytest.raises(RAtomInvalidValence):
+        _ = FragmentMolecule(xyz_filename=xyz_path)
+
+    # Cannot generate a fragment from a structure with no R atoms
+    xyz_path = os.path.join(here, 'data', 'ethane.xyz')
+    with pytest.raises(RAtomNotFound):
+        _ = FragmentMolecule(xyz_filename=xyz_path)
+
+
 
 def test_combined_molecule():
 
@@ -179,16 +205,20 @@ def test_combined_molecule():
 
     # Ethane
     mol = CombinedMolecule(core_mol=core_mol, frag_smiles='C[*]')
+    assert coordinates_are_resonable(coords=mol.get_coordinates())
     assert mol.n_atoms == 8
 
     mol = CombinedMolecule(core_mol=core_mol, frag_smiles_list=['C[*]'])
+    assert coordinates_are_resonable(coords=mol.get_coordinates())
     assert mol.n_atoms == 8
 
     fragment_mol = FragmentMolecule(smiles='C[*]')
     mol = CombinedMolecule(core_mol=core_mol, fragment=fragment_mol)
+    assert coordinates_are_resonable(coords=mol.get_coordinates())
     assert mol.n_atoms == 8
 
     mol = CombinedMolecule(core_mol=core_mol, fragments=[fragment_mol])
+    assert coordinates_are_resonable(coords=mol.get_coordinates())
     assert mol.n_atoms == 8
 
     # Delete two hydrogens from methae
@@ -196,6 +226,7 @@ def test_combined_molecule():
 
     # Propane
     mol = CombinedMolecule(core_mol=core_mol, frag_smiles='C[*]')
+    assert coordinates_are_resonable(coords=mol.get_coordinates())
     assert mol.n_atoms == 11
 
 
@@ -232,3 +263,16 @@ def test_combined_molecule_no_fragments():
     # atoms to delete, but will add no atoms (Is this the clearest behaviour?)
     mol = CombinedMolecule(core_mol=core_mol)
     assert mol.n_atoms == 0
+
+
+def test_combined_molecule_ortho_subst():
+
+    methane = CoreMolecule(atoms=atoms, atoms_to_del=[2, 3])
+
+    # Submitting two tBu groups onto methane should be possible (generate a
+    # sensible structure if the optimisation includes the previously added
+    # fragment
+    subt = CombinedMolecule(core_mol=methane,
+                            frag_smiles='CC(C)([*])C')
+
+    assert coordinates_are_resonable(coords=subt.get_coordinates())

@@ -6,6 +6,12 @@ import os
 here = os.path.dirname(os.path.abspath(__file__))
 
 
+def coordinates_are_resonable(coords):
+    """Check that there are no very short or very long pairwise distances"""
+    dist_mat = distance_matrix(coords, coords)
+    return 0.8 < np.min(dist_mat + np.identity(len(coords))) < 5.0
+
+
 def test_benzene_func():
 
     benzene_xyz_path = os.path.join(here, 'data', 'benzene.xyz')
@@ -43,10 +49,17 @@ def test_dmhp():
                               name='dimphp')
 
     # Check that the geometry is fairly sensible
-    coords = dimphp.get_coordinates()
-    dist_mat = distance_matrix(coords, coords)
-
-    assert 0.8 < np.min(dist_mat + np.identity(len(coords))) < 5.0
+    assert coordinates_are_resonable(coords=dimphp.get_coordinates())
 
     dimphp.make_graph()
     assert dimphp.graph.number_of_edges() == 20
+
+
+def test_pme3():
+
+    ph3 = CoreMolecule(xyz_filename=os.path.join(here, 'data', 'PH3.xyz'),
+                       atoms_to_del=[2, 3, 4])
+
+    pme3 = CombinedMolecule(core_mol=ph3, frag_smiles='C[*]', name='PMe3')
+    assert coordinates_are_resonable(coords=pme3.get_coordinates())
+
