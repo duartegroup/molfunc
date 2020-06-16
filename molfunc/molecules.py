@@ -1,12 +1,11 @@
 import numpy as np
 from scipy.spatial import distance_matrix
-from scipy.optimize import minimize
 import networkx as nx
-from molfunc import energy
 from molfunc.atoms import smiles_to_atoms
 from molfunc.atoms import xyz_file_to_atoms
 from molfunc.bonds import get_avg_bond_length
 from molfunc.atoms import NNAtom, Atom
+from molfunc.energy import get_lowest_energy_rotation
 from molfunc.geom import get_rotated_coords
 from molfunc.exceptions import *
 from molfunc.utils import requires_atoms
@@ -71,9 +70,6 @@ class Molecule:
     @requires_atoms()
     def print_xyz_file(self):
         """Print a standard .xyz file from the Molecule's atoms"""
-
-        if self.atoms is None or len(self.atoms) == 0:
-            raise NoAtomsToPrint
 
         with open(f'{self.name}.xyz', 'w') as xyz_file:
             print(self.n_atoms, '\n', file=xyz_file)
@@ -245,7 +241,7 @@ class FragmentMolecule(Molecule):
 
         raise RAtomNotFound
 
-    def minimise_repulsion(self, other_mol, n=100, tolerance=0.1):
+    def minimise_repulsion(self, other_mol):
         """
         Minimise the 'energy' with respect to rigid body rotation of this
         molecule given some other (core) molecule
@@ -261,24 +257,10 @@ class FragmentMolecule(Molecule):
         other_coords = other_mol.get_coordinates() - self.nn_atom.coord
         coords = self.get_coordinates() - self.nn_atom.coord
 
-        # Set up initial parameters
-        min_energy = best_x = None
+        # Set the new coordinates with the best rotation arr (lowest repulsion)
+        best_r = get_lowest_energy_rotation(coords, other_coords)
+        new_coords = get_rotated_coords(rotation=best_r, coords=coords)
 
-        for _ in range(n):
-
-            x0 = np.random.uniform(0.0, 2*np.pi, size=4)
-
-            # Minimise repulsion between coords and the other_coords
-            # TODO analytic derivative
-            res = minimize(energy.repulsion, x0=x0, args=(coords, other_coords),
-                           method='L-BFGS-B', tol=tolerance)
-
-            if min_energy is None or res.fun < min_energy:
-                min_energy = res.fun
-                best_x = res.x
-
-        # Set the new coordinates, with the best x array (lowest repulsion)
-        new_coords = get_rotated_coords(x=best_x, coords=coords)
         for i in range(self.n_atoms):
             self.atoms[i].coord = new_coords[i] + self.nn_atom.coord
 
@@ -352,7 +334,10 @@ class CombinedMolecule(Molecule):
 
         for i, fragment_mol in enumerate(self.fragments):
             fragment_mol.shift_to_core_atom(self.core_mol.nn_atoms[i])
-            fragment_mol.minimise_repulsion(other_mol=self.core_mol)
+            # print(self.core_mol.nn_atoms[i])
+
+            # Repulsion is to both the core and previously added fragments
+            fragment_mol.minimise_repulsion(other_mol=Molecule(atoms=atoms))
 
             atoms += fragment_mol.atoms
 
@@ -369,12 +354,27 @@ class CombinedMolecule(Molecule):
         a FragmentMolecule or a list of FragmentMolecules again if there is
         more than 1 functionalisation to be performed
 
-        :param name: (str)
-        :param core_mol: (molfunc.molecules.CoreMolecule)
-        :param frag_smiles: (str)
-        :param frag_smiles_list: (list(str))
-        :param fragment: (molfunc.molecules.FragmentMolecule)
-        :param fragments: (list(molfunc.molecules.FragmentMolecule))
+        :param name: (str) Name of the molecule
+
+        :param core_mol: (molfunc.molecules.CoreMolecule) Core molecule that
+                         will be functionalised
+
+        :param frag_smiles: (str) SMILES string to add to the core molecule
+                            in *all* the core_mol.datom_idxs positions. For
+                            example a methyl fragment: 'C[*]'
+
+        :param frag_smiles_list: (list(str)) List of SMILES strings that will
+                                 be added to the core molecule in sequence. The
+                                 length must be equal len(core_mol.datom_idxs)
+
+        :param fragment: (molfunc.molecules.FragmentMolecule) A pre-generated
+                         fragment object. Perhaps initialised from a .xyz file
+                         containing an 'R' atom which is closer than 1.5 Å
+                         to a single atom
+
+        :param fragments: (list(molfunc.molecules.FragmentMolecule)) List of
+                          FragmentMolecule to add in sequence. Length of the
+                          list must equal len(core_mol.datom_idxs)
         """
         super().__init__(name=name)
 
@@ -386,14 +386,14 @@ class CombinedMolecule(Molecule):
 
         self.fragments = []
         if frag_smiles is not None:
-            self.fragments = self.n_fragments_to_add * [FragmentMolecule(smiles=frag_smiles)]
+            self.fragments = [FragmentMolecule(smiles=frag_smiles) for _ in range(self.n_fragments_to_add)]
 
         if frag_smiles_list is not None:
             self.fragments = [FragmentMolecule(smiles=smiles) for smiles in frag_smiles_list]
 
         if fragment is not None:
             assert isinstance(fragment, FragmentMolecule)
-            self.fragments = self.n_fragments_to_add * [fragment]
+            self.fragments = [fragment for _ in range(self.n_fragments_to_add)]
 
         if fragments is not None:
             assert all(isinstance(fr, FragmentMolecule) for fr in fragments)
