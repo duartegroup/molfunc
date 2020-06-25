@@ -198,6 +198,34 @@ def test_fragment_molecule():
         _ = FragmentMolecule(xyz_filename=xyz_path)
 
 
+def test_fragment_molecule_fr():
+
+    core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2])
+
+    # Fragment molecules can also be initialised from [Fr] SMILES strings as
+    # well as ['*']
+    fragment_mol = FragmentMolecule(name='HOR', smiles='O[Fr]')
+    assert fragment_mol.n_atoms == 2                            # OH atoms
+
+    mol = CombinedMolecule(core_mol=core_mol, fragment=fragment_mol)
+    assert mol.n_atoms == 6
+    assert coordinates_are_resonable(coords=mol.get_coordinates())
+
+    # Should also work directly from the SMILES string
+    mol = CombinedMolecule(core_mol=core_mol, frag_smiles='O[Fr]')
+    assert mol.n_atoms == 6
+    assert coordinates_are_resonable(coords=mol.get_coordinates())
+
+
+def test_fragment_molecule_closest():
+
+    # R atom that is far away from the molecule is supported as the nn atom is
+    # just the atom with the shortest distance
+    xyz_path = os.path.join(here, 'data', 'ethane_fragment_far.xyz')
+    mol = FragmentMolecule(xyz_filename=xyz_path)
+
+    assert mol.nn_atom.label == 'C'
+
 
 def test_combined_molecule():
 
@@ -276,3 +304,15 @@ def test_combined_molecule_ortho_subst():
                             frag_smiles='CC(C)([*])C')
 
     assert coordinates_are_resonable(coords=subt.get_coordinates())
+
+
+def test_combined_molecule_fr():
+    xyz_path = os.path.join(here, 'data', 'benzene.xyz')
+
+    fragment = FragmentMolecule(smiles='[Fr]NC(N)=O')
+
+    mol = CombinedMolecule(core_mol=CoreMolecule(xyz_filename=xyz_path,
+                                                 atoms_to_del=[7]),
+                           fragment=fragment)
+
+    assert coordinates_are_resonable(coords=mol.get_coordinates())

@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial import distance_matrix
+from scipy.spatial.distance import cdist
 import networkx as nx
 from molfunc.atoms import smiles_to_atoms
 from molfunc.atoms import xyz_file_to_atoms
@@ -225,19 +226,36 @@ class FragmentMolecule(Molecule):
         :return: (molfunc.atoms.NNatom)
         """
 
-        for (atom_i, atom_j) in self.graph.edges:
+        # Ensure there is one R
+        if not any(atom.label == 'R' for atom in self.atoms):
+            raise RAtomNotFound
 
-            if self.atoms[atom_i].label == 'R':
-                if self.atoms[atom_i].valence != 1:
+        # Find the first (hopefully only) monovalent R atom in the molecule
+        for edge in self.graph.edges:
+
+            for (i, j) in [edge, reversed(edge)]:
+                if self.atoms[i].label != 'R':
+                    continue
+
+                if self.atoms[i].valence > 1:
                     raise RAtomInvalidValence
 
-                return NNAtom(atom=self.atoms[atom_j])
+                return NNAtom(atom=self.atoms[j])
 
-            if self.atoms[atom_j].label == 'R':
-                if self.atoms[atom_j].valence != 1:
-                    raise RAtomInvalidValence
+        # There is at least one R atom that is not bonded to any atom - return
+        # the closest atom to to the R atom
+        for i, atom in enumerate(self.atoms):
 
-                return NNAtom(atom=self.atoms[atom_i])
+            if atom.label != 'R':
+                continue
+
+            distances = cdist(np.array([atom.coord]), self.get_coordinates())
+
+            # Nearest neighbour is the second in the sorted index array, with
+            # the first being the atom itself
+            nn_atom_idx = np.argsort(distances)[0, 1]
+
+            return NNAtom(atom=self.atoms[nn_atom_idx])
 
         raise RAtomNotFound
 
@@ -247,11 +265,6 @@ class FragmentMolecule(Molecule):
         molecule given some other (core) molecule
 
         :param other_mol: (molfunc.CoreMolecule)
-        :param n: (int) Number of minimisation to perform as to (hopefully)
-                  locate the global minimum
-        :param tolerance: (float) Threshold on the energy minimisation 0.1 is
-                          a reasonable compromise between speed and accuracy
-        :return:
         """
         # Coords where the nearest neighbour atom is centered at the origin
         other_coords = other_mol.get_coordinates() - self.nn_atom.coord
@@ -269,6 +282,14 @@ class FragmentMolecule(Molecule):
     def _delete_r_atom(self):
         """Delete the atom with label 'R' from the atoms"""
         return self.set_atoms(atoms=[atom for atom in self.atoms if atom.label != 'R'])
+
+    def _swap_fr_for_r(self):
+        """Fragments can also have Fr atoms in place of R atoms, swap for R"""
+        for atom in self.atoms:
+            if atom.label == 'Fr':
+                atom.label = 'R'
+
+        return None
 
     def shift_to_core_atom(self, core_atom):
         """Given a core atom (molfunc.atoms.NNAtom) shift the fragment so the
@@ -303,14 +324,19 @@ class FragmentMolecule(Molecule):
         The C atom will be the nn_atom (closest to R)
 
         :param name: (str)
+
         :param core_atom: (molfunc.atoms.NNAtom) The atom on the core molecule
                           to which this fragment will be attached
+
         :param xyz_filename: (str)
-        :param smiles: (str) SMILES string
+
+        :param smiles: (str) SMILES string e.g. 'C[*]' or 'C[Fr]'
+
         :param atoms: (list(molfunc.atom.Atom)) List of atoms
         """
         super().__init__(name, xyz_filename, smiles, atoms)
 
+        self._swap_fr_for_r()
         self.nn_atom = self.get_ratom_nearest_neighbour()
         self._delete_r_atom()
 
@@ -334,7 +360,6 @@ class CombinedMolecule(Molecule):
 
         for i, fragment_mol in enumerate(self.fragments):
             fragment_mol.shift_to_core_atom(self.core_mol.nn_atoms[i])
-            # print(self.core_mol.nn_atoms[i])
 
             # Repulsion is to both the core and previously added fragments
             fragment_mol.minimise_repulsion(other_mol=Molecule(atoms=atoms))
