@@ -14,3 +14,5 @@ ffunc/__pycache__/
 molfunc.egg-info/
 
 molfunc/__pycache__/
+
+tests/__pycache__/

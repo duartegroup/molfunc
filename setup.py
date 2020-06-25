@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='molfunc',
-      version='1.0.0a0',
+      version='1.0.0a2',
       packages=['molfunc'],
       license='MIT',
       author='Tom Young',
