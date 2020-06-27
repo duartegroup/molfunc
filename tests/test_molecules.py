@@ -156,11 +156,7 @@ def test_core_molecule():
 
 def test_fragment_molecule():
 
-    atom = Atom('C')
-    core_atom = NNAtom(atom, shift_vec=np.array([1.0, 0.0, 0.0]))
-
-    mol = FragmentMolecule(smiles='C[*]',
-                           core_atom=core_atom)
+    mol = FragmentMolecule(smiles='C[*]')
     # Generating a fragment should delete the R atom
     assert mol.n_atoms == 4
 
@@ -174,17 +170,9 @@ def test_fragment_molecule():
               Atom('H', 0.87807, -0.45398, -1.55920)]
 
     # Initialisation with atoms should also work
-    mol = FragmentMolecule(atoms=ratoms,
-                           core_atom=core_atom)
+    mol = FragmentMolecule(atoms=ratoms)
     assert mol.n_atoms == 4
     assert mol.nn_atom.label == 'C'
-
-    # Core atom is at (0, 0, 0) and is a carbon, so the NN atom should be
-    # ~1.5 Å away (average C-C distance) from the origin
-    assert 1.4 < np.linalg.norm(mol.nn_atom.coord) < 1.6
-
-    # The NN atom is also atom 0, so that should also be ~1.5 Å from the origin
-    assert 1.4 < np.linalg.norm(mol.atoms[0].coord) < 1.6
 
     # Cannot generate a fragment from a structure where the R atom has > 1
     # bonds
@@ -198,13 +186,13 @@ def test_fragment_molecule():
         _ = FragmentMolecule(xyz_filename=xyz_path)
 
 
-def test_fragment_molecule_fr():
+def test_fragment_molecule2():
 
     core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2])
 
     # Fragment molecules can also be initialised from [Fr] SMILES strings as
     # well as ['*']
-    fragment_mol = FragmentMolecule(name='HOR', smiles='O[Fr]')
+    fragment_mol = FragmentMolecule(name='HOR', smiles='O[*]')
     assert fragment_mol.n_atoms == 2                            # OH atoms
 
     mol = CombinedMolecule(core_mol=core_mol, fragment=fragment_mol)
@@ -212,7 +200,7 @@ def test_fragment_molecule_fr():
     assert coordinates_are_resonable(coords=mol.get_coordinates())
 
     # Should also work directly from the SMILES string
-    mol = CombinedMolecule(core_mol=core_mol, frag_smiles='O[Fr]')
+    mol = CombinedMolecule(core_mol=core_mol, frag_smiles='O[*]')
     assert mol.n_atoms == 6
     assert coordinates_are_resonable(coords=mol.get_coordinates())
 
@@ -304,15 +292,3 @@ def test_combined_molecule_ortho_subst():
                             frag_smiles='CC(C)([*])C')
 
     assert coordinates_are_resonable(coords=subt.get_coordinates())
-
-
-def test_combined_molecule_fr():
-    xyz_path = os.path.join(here, 'data', 'benzene.xyz')
-
-    fragment = FragmentMolecule(smiles='[Fr]NC(N)=O')
-
-    mol = CombinedMolecule(core_mol=CoreMolecule(xyz_filename=xyz_path,
-                                                 atoms_to_del=[7]),
-                           fragment=fragment)
-
-    assert coordinates_are_resonable(coords=mol.get_coordinates())

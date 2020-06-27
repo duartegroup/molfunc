@@ -74,4 +74,3 @@ def get_points_on_sphere(n_points, r=1):
         points += (n_points - len(points)) * [np.array([1.0, 0.0, 0.0])]
 
     return points
-

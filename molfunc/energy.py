@@ -1,6 +1,6 @@
-from molfunc.geom import get_rotated_coords
 from scipy.spatial import distance_matrix
 from scipy.optimize import minimize
+from molfunc.geom import get_rotated_coords
 from molfunc.geom import get_points_on_sphere
 import numpy as np
 
@@ -9,7 +9,7 @@ def repulsion(rotation, coords, alt_coords):
     """
     Calculate the repulsion energy between two sets of coordinates with
 
-        V = Σpairs 1/rij^4
+        V = Σpairs 1/rij^6
 
     where the coordinates are rotated in an axis x[:3] theta radians (x[3])
 
@@ -20,7 +20,7 @@ def repulsion(rotation, coords, alt_coords):
 
     coords = get_rotated_coords(rotation, coords)
     dist_mat = distance_matrix(coords, alt_coords)
-    energy = np.sum(np.power(dist_mat, -4))
+    energy = np.sum(np.power(dist_mat, -6))
 
     return energy
 
