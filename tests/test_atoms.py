@@ -50,3 +50,7 @@ def test_smiles_generation():
     # Propane should have 11 atoms in each conformer
     for conformer_atoms in conformer_list:
         assert len(conformer_atoms) == 11
+
+    # Currently Li atoms are not allowed in a SMILES string, pretty unlikely(?)
+    with pytest.raises(MolFuncCritical):
+        _ = smiles_to_atoms(smiles='Li.Cl')

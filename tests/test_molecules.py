@@ -132,6 +132,21 @@ def test_core_molecule():
         _ = CoreMolecule(name='ethane', xyz_filename=xyz_path, atoms_to_del=[1])
 
 
+def test_bad_core_molecule():
+
+    atoms_far_h = [Atom('C', 1.24788, 0.56457, -1.79703),
+                   Atom('H', 9, 9, 9),
+                   Atom('H', 0.87808, 0.86789, -2.79804),
+                   Atom('H', 0.87807, 1.27982, -1.03385),
+                   Atom('H', 0.87807, -0.45398, -1.55920)]
+
+    # Core molecule with a atom to delete that doesn't have a nearest neighbour
+    core_mol = CoreMolecule(atoms=atoms_far_h)
+
+    with pytest.raises(DatomsNotValid):
+        core_mol.get_datom_nn(datom_idx=1)
+
+
 def test_fragment_molecule():
 
     mol = FragmentMolecule(smiles='C[*]')
@@ -181,6 +196,12 @@ def test_fragment_molecule2():
     mol = CombinedMolecule(core_mol=core_mol, frag_smiles='O[*]')
     assert mol.n_atoms == 6
     assert coordinates_are_resonable(coords=mol.get_coordinates())
+
+
+def test_bad_fragment_molecule():
+
+    with pytest.raises(RAtomNotFound):
+        _ = FragmentMolecule(atoms=[Atom('H')])
 
 
 def test_fragment_molecule_closest():
@@ -270,3 +291,13 @@ def test_combined_molecule_ortho_subst():
                             frag_smiles='CC(C)([*])C')
 
     assert coordinates_are_resonable(coords=subt.get_coordinates())
+
+
+def test_combined_molecule_no_nn():
+
+    methane = CoreMolecule(atoms=atoms)
+    methane.datom_idxs = [2]
+
+    with pytest.raises(CombinationFailed):
+        _ = CombinedMolecule(core_mol=methane,
+                             frag_smiles='C[*]')
