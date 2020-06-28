@@ -58,10 +58,12 @@ class NNAtom(Atom):
 
 def xyz_file_to_atoms(filename):
     """
-    From an .xyz file get a list of atoms
+    From an .xyz file get a list of atoms. If a fragment set of atoms they
+    should either contain an R atom which will be deleted and used to generate
+    the functionalised molecule
 
     :param filename: (str)
-    :return: (list(molfunc.Atom))
+    :return: (list(molfunc.atoms.Atom))
     """
     atoms = []
 
@@ -99,11 +101,22 @@ def smiles_to_atoms(smiles, n_confs=1):
     From a SMILES string generate n_confs conformers using RDKit with the
     ETKDGv2 algorithm
 
+    If there is an * atom in the SMILES string this function will convert it
+    to a Li atom to generate the structure with RDKit then swap it for R from
+    which will be added to a core
+
     :param smiles: (str)
     :param n_confs: (int)
     :return: (list(list(molfunc.atoms.Atom)) if n_confs > 1 else
              (list(molfunc.atoms.Atom))
     """
+    # Swap Fr for Li so RDKit generates something reasonable
+    if 'Li' in smiles:
+        raise MolFuncCritical('Cannot convert a molecule containing Li')
+
+    if '[*]' in smiles:
+        smiles = smiles.replace('[*]', '[Li]')
+
     # Generate an RDKit Molecule object, add hydrogens and generate conformers
     try:
         mol_obj = Chem.MolFromSmiles(smiles)
@@ -129,6 +142,10 @@ def smiles_to_atoms(smiles, n_confs=1):
             items = line.split()
             if len(items) == 16:
                 atom_label, x, y, z = items[3], items[0], items[1], items[2]
+
+                # Swap Li to R
+                if atom_label == 'Li':
+                    atom_label = 'R'
 
                 atoms.append(Atom(atomic_symbol=atom_label, x=x, y=y, z=z))
 

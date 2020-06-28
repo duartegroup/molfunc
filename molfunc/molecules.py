@@ -2,20 +2,19 @@ import numpy as np
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import cdist
 import networkx as nx
-from molfunc.atoms import smiles_to_atoms
-from molfunc.atoms import xyz_file_to_atoms
-from molfunc.bonds import get_avg_bond_length
 from molfunc.atoms import NNAtom, Atom
-from molfunc.energy import get_lowest_energy_rotation
-from molfunc.geom import get_rotated_coords
+from molfunc.atoms import smiles_to_atoms, xyz_file_to_atoms
+from molfunc.bonds import get_avg_bond_length
 from molfunc.exceptions import *
 from molfunc.utils import requires_atoms
+from molfunc_ext import get_minimised_coords
 from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
 
 
 class Molecule:
 
+    @requires_atoms()
     def make_graph(self, rel_tolerance=0.2):
         """
         Make the molecular graph from the 'bonds' determined on a distance
@@ -50,6 +49,7 @@ class Molecule:
 
         return None
 
+    @requires_atoms()
     def set_atomic_valancies(self):
         """Set the atomic valency for each atom. Double/triple bonds are *not*
         distinct from single bonds"""
@@ -154,6 +154,10 @@ class CoreMolecule(Molecule):
                                  f'with valency {self.atoms[i].valence}')
         return None
 
+    def get_nn_atoms(self):
+        """Return the nearest neighbours to all the datom_idxs"""
+        return [self.get_datom_nn(i) for i in self.datom_idxs]
+
     def get_datom_nn(self, datom_idx):
         """
         Return the nearest neighbour atom to a particular atom to delete
@@ -172,6 +176,7 @@ class CoreMolecule(Molecule):
         :return: (molfunc.atoms.NNatom)
         """
 
+        # Iterate through the bonds in the molecule
         for (i, j) in self.graph.edges:
 
             vec = self.atoms[i].coord - self.atoms[j].coord
@@ -181,7 +186,7 @@ class CoreMolecule(Molecule):
             if j == datom_idx:
                 return NNAtom(atom=self.atoms[i], shift_vec=-vec)
 
-        return None
+        raise DatomsNotValid('Atom to delete did not have a nearest neighbour')
 
     def _delete_datoms(self):
         """Remove all datoms from the atoms list and set the atoms"""
@@ -209,7 +214,7 @@ class CoreMolecule(Molecule):
 
         # Nearest neighbour atoms to those deleted to enable translation of the
         # fragment
-        self.nn_atoms = [self.get_datom_nn(i) for i in self.datom_idxs]
+        self.nn_atoms = self.get_nn_atoms()
 
         # Remove the atoms in the datom_idxs list from the atoms
         self._delete_datoms()
@@ -270,9 +275,9 @@ class FragmentMolecule(Molecule):
         other_coords = other_mol.get_coordinates() - self.nn_atom.coord
         coords = self.get_coordinates() - self.nn_atom.coord
 
-        # Set the new coordinates with the best rotation arr (lowest repulsion)
-        best_r = get_lowest_energy_rotation(coords, other_coords)
-        new_coords = get_rotated_coords(rotation=best_r, coords=coords)
+        # Minimise the energy with respect to rotation (lowest repulsion)
+        new_coords = get_minimised_coords(py_coords=coords,
+                                          py_other_coords=other_coords)
 
         for i in range(self.n_atoms):
             self.atoms[i].coord = new_coords[i] + self.nn_atom.coord
@@ -282,14 +287,6 @@ class FragmentMolecule(Molecule):
     def _delete_r_atom(self):
         """Delete the atom with label 'R' from the atoms"""
         return self.set_atoms(atoms=[atom for atom in self.atoms if atom.label != 'R'])
-
-    def _swap_fr_for_r(self):
-        """Fragments can also have Fr atoms in place of R atoms, swap for R"""
-        for atom in self.atoms:
-            if atom.label == 'Fr':
-                atom.label = 'R'
-
-        return None
 
     def shift_to_core_atom(self, core_atom):
         """Given a core atom (molfunc.atoms.NNAtom) shift the fragment so the
@@ -308,8 +305,7 @@ class FragmentMolecule(Molecule):
 
         return None
 
-    def __init__(self, name='mol', xyz_filename=None, smiles=None,
-                 core_atom=None, atoms=None):
+    def __init__(self, name='mol', xyz_filename=None, smiles=None, atoms=None):
         """
         Fragment molecule class
 
@@ -336,25 +332,30 @@ class FragmentMolecule(Molecule):
         """
         super().__init__(name, xyz_filename, smiles, atoms)
 
-        self._swap_fr_for_r()
+        # Get the nearest neighbour atom to R then delete the R atom
         self.nn_atom = self.get_ratom_nearest_neighbour()
         self._delete_r_atom()
-
-        # To manipulate as a fragment there needs to be a core atom to
-        # translate to
-        if core_atom is not None:
-            self.shift_to_core_atom(core_atom)
 
 
 class CombinedMolecule(Molecule):
 
-    def build(self):
-        """Build the combined molecule by iterating through self.fragments
-        fragments minimising the repulsion to the core mol at each point"""
+    def _check(self):
+        """Check for features required to build this combined molecule"""
 
         if len(self.fragments) != self.n_fragments_to_add:
             raise CombinationFailed('Number of fragments is not equal to the'
                                     'number of fragments to add (core datoms)')
+
+        # If the nearest neighbour atoms are not set then set them
+        if len(self.core_mol.nn_atoms) == 0:
+            raise CombinationFailed('Atoms to delete in the core molecule'
+                                    'had no nearest neighbours set')
+        return None
+
+    def build(self):
+        """Build the combined molecule by iterating through self.fragments
+        fragments minimising the repulsion to the core mol at each point"""
+        self._check()
 
         atoms = self.core_mol.atoms.copy()
 

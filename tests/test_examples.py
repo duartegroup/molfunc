@@ -1,4 +1,4 @@
-from molfunc import CoreMolecule, CombinedMolecule
+from molfunc import CoreMolecule, CombinedMolecule, FragmentMolecule
 from scipy.spatial import distance_matrix
 import numpy as np
 import os
@@ -63,3 +63,15 @@ def test_pme3():
     pme3 = CombinedMolecule(core_mol=ph3, frag_smiles='C[*]', name='PMe3')
     assert coordinates_are_resonable(coords=pme3.get_coordinates())
 
+
+def test_fragment_from_file():
+
+    benzene = CoreMolecule(xyz_filename=os.path.join(here, 'data', 'benzene.xyz'),
+                           atoms_to_del=[7])
+    methyl = FragmentMolecule(name='methyl',
+                              xyz_filename=os.path.join(here, 'data', 'methyl.xyz'))
+
+    toluene = CombinedMolecule(core_mol=benzene, fragment=methyl,
+                               name='toluene')
+    assert toluene.n_atoms == 15
+    assert coordinates_are_resonable(coords=toluene.get_coordinates())

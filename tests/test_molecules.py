@@ -1,7 +1,6 @@
 from molfunc.molecules import Molecule
 from molfunc import FragmentMolecule, CombinedMolecule, CoreMolecule
-from molfunc.molecules import get_rotated_coords
-from molfunc.atoms import Atom, NNAtom
+from molfunc.atoms import Atom
 from molfunc.exceptions import *
 from scipy.spatial import distance_matrix
 import numpy as np
@@ -110,27 +109,6 @@ def test_molecule_bad_smiles():
         _ = Molecule(smiles='XX')
 
 
-def test_molecule_rotation():
-
-    coords = np.array([[1.500e-03,  2.000e-04,  3.400e-03],
-                       [-5.948e-01, -2.155e-01,  9.059e-01],
-                       [4.716e-01,  9.986e-01,  2.830e-02],
-                       [-6.780e-01, -3.370e-02, -8.588e-01],
-                       [7.999e-01, -7.496e-01, -7.890e-02]])
-
-    rot_coords = np.array([[-1.49930982e-03, -2.05109849e-04,  3.400000e-03],
-                           [5.94062265e-01,  2.17525435e-01,  9.059000e-01],
-                           [-4.68194693e-01, -1.00020110e+00,  2.830000e-02],
-                           [6.77881237e-01,  3.60099808e-02, -8.588000e-01],
-                           [-8.02449499e-01,  7.46870117e-01, -7.890000e-02]])
-
-    new_coords = get_rotated_coords(rotation=[0.0, 0.0, 1.0, 3.145], coords=coords)
-
-    # Check that the new coordinates are close to the expected (rot_coords)
-    for i, coord in enumerate(new_coords):
-        assert np.linalg.norm(coord - rot_coords[i]) < 1E-6
-
-
 def test_core_molecule():
 
     core_mol = CoreMolecule(atoms=atoms)
@@ -154,13 +132,24 @@ def test_core_molecule():
         _ = CoreMolecule(name='ethane', xyz_filename=xyz_path, atoms_to_del=[1])
 
 
+def test_bad_core_molecule():
+
+    atoms_far_h = [Atom('C', 1.24788, 0.56457, -1.79703),
+                   Atom('H', 9, 9, 9),
+                   Atom('H', 0.87808, 0.86789, -2.79804),
+                   Atom('H', 0.87807, 1.27982, -1.03385),
+                   Atom('H', 0.87807, -0.45398, -1.55920)]
+
+    # Core molecule with a atom to delete that doesn't have a nearest neighbour
+    core_mol = CoreMolecule(atoms=atoms_far_h)
+
+    with pytest.raises(DatomsNotValid):
+        core_mol.get_datom_nn(datom_idx=1)
+
+
 def test_fragment_molecule():
 
-    atom = Atom('C')
-    core_atom = NNAtom(atom, shift_vec=np.array([1.0, 0.0, 0.0]))
-
-    mol = FragmentMolecule(smiles='C[*]',
-                           core_atom=core_atom)
+    mol = FragmentMolecule(smiles='C[*]')
     # Generating a fragment should delete the R atom
     assert mol.n_atoms == 4
 
@@ -174,17 +163,9 @@ def test_fragment_molecule():
               Atom('H', 0.87807, -0.45398, -1.55920)]
 
     # Initialisation with atoms should also work
-    mol = FragmentMolecule(atoms=ratoms,
-                           core_atom=core_atom)
+    mol = FragmentMolecule(atoms=ratoms)
     assert mol.n_atoms == 4
     assert mol.nn_atom.label == 'C'
-
-    # Core atom is at (0, 0, 0) and is a carbon, so the NN atom should be
-    # ~1.5 Å away (average C-C distance) from the origin
-    assert 1.4 < np.linalg.norm(mol.nn_atom.coord) < 1.6
-
-    # The NN atom is also atom 0, so that should also be ~1.5 Å from the origin
-    assert 1.4 < np.linalg.norm(mol.atoms[0].coord) < 1.6
 
     # Cannot generate a fragment from a structure where the R atom has > 1
     # bonds
@@ -198,13 +179,13 @@ def test_fragment_molecule():
         _ = FragmentMolecule(xyz_filename=xyz_path)
 
 
-def test_fragment_molecule_fr():
+def test_fragment_molecule2():
 
     core_mol = CoreMolecule(atoms=atoms, atoms_to_del=[2])
 
     # Fragment molecules can also be initialised from [Fr] SMILES strings as
     # well as ['*']
-    fragment_mol = FragmentMolecule(name='HOR', smiles='O[Fr]')
+    fragment_mol = FragmentMolecule(name='HOR', smiles='O[*]')
     assert fragment_mol.n_atoms == 2                            # OH atoms
 
     mol = CombinedMolecule(core_mol=core_mol, fragment=fragment_mol)
@@ -212,9 +193,15 @@ def test_fragment_molecule_fr():
     assert coordinates_are_resonable(coords=mol.get_coordinates())
 
     # Should also work directly from the SMILES string
-    mol = CombinedMolecule(core_mol=core_mol, frag_smiles='O[Fr]')
+    mol = CombinedMolecule(core_mol=core_mol, frag_smiles='O[*]')
     assert mol.n_atoms == 6
     assert coordinates_are_resonable(coords=mol.get_coordinates())
+
+
+def test_bad_fragment_molecule():
+
+    with pytest.raises(RAtomNotFound):
+        _ = FragmentMolecule(atoms=[Atom('H')])
 
 
 def test_fragment_molecule_closest():
@@ -306,13 +293,11 @@ def test_combined_molecule_ortho_subst():
     assert coordinates_are_resonable(coords=subt.get_coordinates())
 
 
-def test_combined_molecule_fr():
-    xyz_path = os.path.join(here, 'data', 'benzene.xyz')
+def test_combined_molecule_no_nn():
 
-    fragment = FragmentMolecule(smiles='[Fr]NC(N)=O')
+    methane = CoreMolecule(atoms=atoms)
+    methane.datom_idxs = [2]
 
-    mol = CombinedMolecule(core_mol=CoreMolecule(xyz_filename=xyz_path,
-                                                 atoms_to_del=[7]),
-                           fragment=fragment)
-
-    assert coordinates_are_resonable(coords=mol.get_coordinates())
+    with pytest.raises(CombinationFailed):
+        _ = CombinedMolecule(core_mol=methane,
+                             frag_smiles='C[*]')
