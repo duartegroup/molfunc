@@ -1,7 +1,6 @@
 from molfunc.molecules import Molecule
 from molfunc import FragmentMolecule, CombinedMolecule, CoreMolecule
-from molfunc.molecules import get_rotated_coords
-from molfunc.atoms import Atom, NNAtom
+from molfunc.atoms import Atom
 from molfunc.exceptions import *
 from scipy.spatial import distance_matrix
 import numpy as np
@@ -108,27 +107,6 @@ def test_molecule_bad_smiles():
     with pytest.raises(RDKitFailed):
         # Initialisation with an invalid SMILES string
         _ = Molecule(smiles='XX')
-
-
-def test_molecule_rotation():
-
-    coords = np.array([[1.500e-03,  2.000e-04,  3.400e-03],
-                       [-5.948e-01, -2.155e-01,  9.059e-01],
-                       [4.716e-01,  9.986e-01,  2.830e-02],
-                       [-6.780e-01, -3.370e-02, -8.588e-01],
-                       [7.999e-01, -7.496e-01, -7.890e-02]])
-
-    rot_coords = np.array([[-1.49930982e-03, -2.05109849e-04,  3.400000e-03],
-                           [5.94062265e-01,  2.17525435e-01,  9.059000e-01],
-                           [-4.68194693e-01, -1.00020110e+00,  2.830000e-02],
-                           [6.77881237e-01,  3.60099808e-02, -8.588000e-01],
-                           [-8.02449499e-01,  7.46870117e-01, -7.890000e-02]])
-
-    new_coords = get_rotated_coords(rotation=[0.0, 0.0, 1.0, 3.145], coords=coords)
-
-    # Check that the new coordinates are close to the expected (rot_coords)
-    for i, coord in enumerate(new_coords):
-        assert np.linalg.norm(coord - rot_coords[i]) < 1E-6
 
 
 def test_core_molecule():

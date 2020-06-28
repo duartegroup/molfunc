@@ -1,0 +1,55 @@
+\documentclass[10pt]{article}
+\usepackage{bm}% bold math
+\usepackage{amsmath}
+
+\begin{document}
+For an function
+
+\begin{equation}
+V(\boldsymbol{x}_i, \boldsymbol{x}_j) = \sum_{\text{pairs}} r_{ij}^n
+\end{equation}
+
+that defines the energy where atoms $\{i\}$ can be rotated with a rotation matrix $R$ the derivative with respect to  a vector $\boldsymbol{\omega} = [\omega_1, \omega_2, \omega_3]$ defining $R$ is derived as follows. Atoms $\{j\}$ are fixed and $r_{ij}$ is the Euclidan distance between a pair of atoms $i$, $j$.
+\\\\
+ From [G. Terzakis, M. Lourakis and D. Ait-Boudaoud, J. Math Imaging Vis., 2018, 60, 422]
+
+\begin{equation}
+[\omega]_\times = \begin{pmatrix}
+ 0 & -\omega_3 & \omega_2 \\
+ \omega_3 & 0 & -\omega_1 \\
+ -\omega_2 & \omega_1 & 0
+\end{pmatrix}
+\end{equation}
+\\
+\begin{equation}
+R = \exp([\omega]_\times) = {I}_3 + \frac{\sin(\theta)}{\theta} [\omega]_\times + \frac{1 - \cos(\theta)}{\theta^2} [\omega]_\times^2
+\end{equation}
+\\
+where $I_3$ is the $3\times3$ identity matrix and $\theta = |\boldsymbol{\omega}|$.
+
+\begin{equation}
+\frac{\partial V}{\partial \omega_1} =  \sum_{\text{pairs}} \frac{\partial }{\partial \omega_1} r_{ij}^n = \sum_{\text{pairs}} n r_{ij}^{n-1}  \frac{\partial r_{ij}}{\partial \omega_1}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial r_{ij}}{\partial \omega_1} &=  \frac{\partial }{\partial \omega_1} [(x_i - x_j)^2 + (y_i - y_j)^2 + (z_i - z_j)^2]^{1/2} \\
+&=r_{ij}^{-1} {\Big [} \frac{\partial (x_i - x_j)}{\partial \omega_1}(x_i - x_j) + \frac{\partial (y_i - y_j)}{\partial \omega_1}(y_i - y_j) + \frac{\partial (z_i - z_j)}{\partial \omega_1}(z_i - z_j)  {\Big ]} \\
+&= r_{ij}^{-1} {\Big [} \frac{\partial x_i}{\partial \omega_1}(x_i - x_j) + \frac{\partial y_i}{\partial \omega_1}(y_i - y_j) + \frac{\partial z_i}{\partial \omega_1}(z_i - z_j) {\Big ]}
+\end{aligned}
+\end{equation}
+\\
+\begin{equation}
+\frac{\partial x_i}{\partial \omega_1} = \frac{\partial }{\partial \omega_1} \{R \boldsymbol{c}\}_x = \frac{\partial R_{00}}{\partial \omega_1}c_1 + \frac{\partial R_{01}}{\partial \omega_1}c_2  + \frac{\partial R_{02}}{\partial \omega_1}c_3
+\end{equation}
+\\
+where $\boldsymbol{c} = [c_1, c_2, c_3]$ is the coordinate of atom $i$ and $R_{nm}$ are elements of the rotation matrix. From [G. Gallego, A. Yezzi,  J. Math. Imag. Vis., 2015, 51, 378]
+
+\begin{equation}
+\frac{\partial R}{\partial \omega_k} = \frac{\omega_k [\omega]_\times + \boldsymbol{\omega} \times (I_3 - R)e_k}{\theta^2} R
+\end{equation}
+\\
+where $e_k$ is the $k$th component basis vector e.g. $\{\boldsymbol{\hat{i}}, \boldsymbol{\hat{j}}, \boldsymbol{\hat{k}}\}$.
+
+\end{document}
+

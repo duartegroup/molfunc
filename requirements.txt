@@ -5,3 +5,4 @@ networkx
 pytest
 pytest-cov
 codecov
+cython

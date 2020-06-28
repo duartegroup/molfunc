@@ -5,10 +5,9 @@ import networkx as nx
 from molfunc.atoms import NNAtom, Atom
 from molfunc.atoms import smiles_to_atoms, xyz_file_to_atoms
 from molfunc.bonds import get_avg_bond_length
-from molfunc.energy import get_lowest_energy_rotation
-from molfunc.geom import get_rotated_coords
 from molfunc.exceptions import *
 from molfunc.utils import requires_atoms
+from molfunc_ext import get_minimised_coords
 from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
 
@@ -276,9 +275,9 @@ class FragmentMolecule(Molecule):
         other_coords = other_mol.get_coordinates() - self.nn_atom.coord
         coords = self.get_coordinates() - self.nn_atom.coord
 
-        # Set the new coordinates with the best rotation arr (lowest repulsion)
-        best_r = get_lowest_energy_rotation(coords, other_coords)
-        new_coords = get_rotated_coords(rotation=best_r, coords=coords)
+        # Minimise the energy with respect to rotation (lowest repulsion)
+        new_coords = get_minimised_coords(py_coords=coords,
+                                          py_other_coords=other_coords)
 
         for i in range(self.n_atoms):
             self.atoms[i].coord = new_coords[i] + self.nn_atom.coord
