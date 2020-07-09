@@ -1,8 +1,15 @@
 from setuptools import setup
 from Cython.Build import cythonize
 from setuptools.extension import Extension
+import os
 
-extensions = [Extension('molfunc_ext', ['molfunc/ext/molfunc_ext.pyx'])]
+# Try to build the extension from the Cython generated C
+if os.path.exists('molfunc/ext/molfunc_ext.c'):
+    ext = 'c'
+else:
+    ext = 'pyx'
+
+extensions = [Extension('molfunc_ext', [f'molfunc/ext/molfunc_ext.{ext}'])]
 
 setup(name='molfunc',
       version='1.0.0a3',
