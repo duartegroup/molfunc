@@ -6,7 +6,7 @@ from libc.math cimport sqrt, pow, cos, sin
 import numpy as np
 
 
-cdef get_rotation_matrix(float w1, float w2, float w3):
+cdef get_rotation_matrix(double w1, double w2, double w3):
     """
     Calculate the rotation matrix. Notation from [G. Terzakis, M. Lourakis,
     D. Ait-Boudaoud, J Math Imaging Vis (2018) 60:422–442
@@ -16,14 +16,14 @@ cdef get_rotation_matrix(float w1, float w2, float w3):
 
     where θ = |ω|, I_3 is the 3x3 identity matrix and [ω]_x^2 is the matrix
     (rather than element wise) square. ω is the vector of (w1, w2, w3)
-
+    
     [ω]_x = [[0, -w3, w2],
              [w3, 0, -w1],
              [-w2, w1, 0]])
 
-    :param w1: (float)
-    :param w2: (float)
-    :param w3: (float)
+    :param w1: (double)
+    :param w2: (double)
+    :param w3: (double)
     :return: (array) Rotation matrix (R). shape = (3, 3)
     """
     cdef double R[3][3]
@@ -53,7 +53,7 @@ cdef get_rotation_matrix(float w1, float w2, float w3):
     return R
 
 
-cdef rotate_coordinates(array coords, int n_atoms, array omega):
+cdef void rotate_coordinates(array coords, int n_atoms, array omega):
     """
     Rotate coordinates using a rotation matrix given a vector omega
 
@@ -62,7 +62,9 @@ cdef rotate_coordinates(array coords, int n_atoms, array omega):
     :param omega: (array) length = 3
     """
     cdef double R[3][3]
-    R = get_rotation_matrix(omega[0], omega[1], omega[2])
+    R = get_rotation_matrix(omega.data.as_doubles[0], 
+                            omega.data.as_doubles[1], 
+                            omega.data.as_doubles[2])
 
     cdef int i
     cdef double x, y, z
@@ -84,27 +86,26 @@ cdef rotate_coordinates(array coords, int n_atoms, array omega):
         # z_i
         coords.data.as_doubles[3*i+2] = (R[2][0] * x + R[2][1] * y + R[2][2] * z)
 
-    return None
+    return
 
 
-cdef get_energy(array coords_i, int n_atoms_i, array coords_j, int n_atoms_j):
+cdef double get_energy(array coords_i, int n_atoms_i, array coords_j, int n_atoms_j):
     """
     Given two sets of coordinates calculate the replsive energy between them as
-
     energy = Σpairs 1/rij^8
 
     :param coords_i: (array) length = 3 * n_atoms_i e.g.
                      [x_1, y_1, z_1, x_2, y_2, z_2, ....]
     :param coords_j: (array) length = 3 * n_atoms_j
-    :return: (float) energy
+    :return: (double) energy
     """
     cdef int i, j
-    cdef float energy = 0.0
+    cdef double energy = 0.0
 
     cdef double delta_x
     cdef double delta_y
     cdef double delta_z
-    cdef double d
+    cdef double d_sq
 
     for i in range(n_atoms_i):
         for j in range(n_atoms_j):
@@ -120,7 +121,7 @@ cdef get_energy(array coords_i, int n_atoms_i, array coords_j, int n_atoms_j):
     return energy
 
 
-cpdef get_array(py_array):
+cpdef array get_array(py_array):
     """
     Convert a Python list or numpy ndarray into a C array. Size (n) is
     unknown at compile time so needs templates
@@ -179,9 +180,9 @@ cpdef get_minimised_coords(py_coords, py_other_coords):
     cdef array coords_i_copy = get_array(py_coords)
 
     # Grid values for the rotation-matrix defining rotation
-    cdef double[12] w1s = np.linspace(-100, 100, 12)
-    cdef double[12] w2s = np.linspace(-100, 100, 12)
-    cdef double[12] w3s = np.linspace(-100, 100, 12)
+    cdef double[15] w1s = np.linspace(-100, 100, 15)
+    cdef double[15] w2s = np.linspace(-100, 100, 15)
+    cdef double[15] w3s = np.linspace(-100, 100, 15)
 
     # Iterators
     cdef int i, j, k
@@ -195,9 +196,9 @@ cpdef get_minimised_coords(py_coords, py_other_coords):
     cdef array best_omega = get_array(np.ones(3))
 
     # Enumerate all possible rotation values
-    for i in range(12):
-        for j in range(12):
-            for k in range(12):
+    for i in range(15):
+        for j in range(15):
+            for k in range(15):
                 # Set the ω vector
                 omega[0] = w1s[i]
                 omega[1] = w2s[j]
@@ -218,6 +219,6 @@ cpdef get_minimised_coords(py_coords, py_other_coords):
 
                 # Reset the values of coordinates i
                 for n in range(3*n_atoms_i):
-                    coords_i[n] = coords_i_copy[n]
+                    coords_i.data.as_doubles[n] = coords_i_copy.data.as_doubles[n]
 
     return get_rotated_coordinates(py_coords, best_omega)

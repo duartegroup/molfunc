@@ -16,3 +16,5 @@ molfunc.egg-info/
 molfunc/__pycache__/
 
 tests/__pycache__/
+
+molfunc/ext/molfunc_ext.c

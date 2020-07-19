@@ -23,7 +23,7 @@ which will generate toluene.xyz file in the current working directory.
 ![alt text](../molfunc/common/benzene_func.png)
 
 ### 1. _p_-Xylene
-Multiple atoms can be modified with the same fragment from the command line with 
+Multiple atoms can be modified with the same fragment, from the command line 
 ```
 molfunc examples/benzene.xyz -a 7 10 -s C[*]
 ```
@@ -50,40 +50,42 @@ dimphp.print_xyz_file()
 Note that the functionalisations are made in order so atoms 2 and 3 will be replaced with methyls 
 and atom 4 with a phenyl.
 
-### 3. Random substitution 
+### 3. Triphenylphoshpine
+
+Common fragments are available in the fragment library and don't require an
+RDKit install (and similarly in 5.)
+
+```python
+from molfunc import CoreMolecule, CombinedMolecule
+from molfunc.fragments import get_fragment_molecule
+
+ph3 = CoreMolecule(xyz_filename='examples/PH3.xyz', atoms_to_del=[2, 3, 4])
+# Fragments are added with aliases so any of {Ph, phenyl, C6H5} are possible
+ph = get_fragment_molecule(name='phenyl')
+
+# Swap each hydrogen for the phenyl fragment
+tpp = CombinedMolecule(core_mol=ph3, fragment=ph, name='TPP')
+tpp.print_xyz_file()
+```
+
+### 4. Random substitution 
 Random substitutions can be made, for example
 
 ```python
 from molfunc import CoreMolecule, CombinedMolecule
+from molfunc.fragments import fragments
 import numpy as np
 
-fragments = ['CN([*])C',
-             'N[*]',
-             'CCCN[*]',
-             'O[*]',
-             'CO[*]',
-             'CCO[*]',
-             'C[*]',
-             'C[Si](C)([*])C',
-             'F[*]',
-             'Cl[*]',
-             'Br[*]',
-             'I[*]',
-             '[*]C(OCC)=O',
-             '[*]C(F)(F)F',
-             'N#C[*]',
-             'O=[N+]([*])[O-]']
-             
 benzene = CoreMolecule(xyz_filename='examples/benzene.xyz', atoms_to_del=[7, 9, 11])
 
-# Select 3 random smiles strings from the list of possible fragments
+# Select 3 fragments from those in molfunc/fragments_lib/
 combined = CombinedMolecule(core_mol=benzene,
-                            frag_smiles_list=np.random.choice(fragments, size=3),
-                            name=f'benzene_random_subst')
+                            fragments=np.random.choice(fragments, size=3),
+                            name='benzene_random_subst')
 combined.print_xyz_file()
 ```
 
-#### 4. Fragments from files
+#### 5. Fragments from files
 Fragments can also be generated from xyz files. They must contain an 
 'R' atom which will be swapped for the core molecule. For example, to
 generate toluene 

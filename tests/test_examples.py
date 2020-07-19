@@ -1,4 +1,5 @@
 from molfunc import CoreMolecule, CombinedMolecule, FragmentMolecule
+from molfunc.fragments import get_fragment_molecule
 from scipy.spatial import distance_matrix
 import numpy as np
 import os
@@ -75,3 +76,19 @@ def test_fragment_from_file():
                                name='toluene')
     assert toluene.n_atoms == 15
     assert coordinates_are_resonable(coords=toluene.get_coordinates())
+
+
+def test_tpp():
+
+    for name in ['Ph', 'phenyl', 'C6H5']:
+        ph3 = CoreMolecule(xyz_filename='examples/PH3.xyz',
+                           atoms_to_del=[2, 3, 4])
+        # Fragments are added with aliases so any of {Ph, pheynl, C5H6} are
+        # possible
+        fragment = get_fragment_molecule(name=name)
+        assert fragment is not None
+
+        tpp = CombinedMolecule(core_mol=ph3, fragment=fragment, name='TPP')
+
+        assert coordinates_are_resonable(coords=tpp.get_coordinates())
+        assert tpp.n_atoms == 34
