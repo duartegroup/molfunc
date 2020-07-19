@@ -16,7 +16,7 @@ cdef get_rotation_matrix(double w1, double w2, double w3):
 
     where θ = |ω|, I_3 is the 3x3 identity matrix and [ω]_x^2 is the matrix
     (rather than element wise) square. ω is the vector of (w1, w2, w3)
-
+    
     [ω]_x = [[0, -w3, w2],
              [w3, 0, -w1],
              [-w2, w1, 0]])
@@ -62,8 +62,8 @@ cdef void rotate_coordinates(array coords, int n_atoms, array omega):
     :param omega: (array) length = 3
     """
     cdef double R[3][3]
-    R = get_rotation_matrix(omega.data.as_doubles[0],
-                            omega.data.as_doubles[1],
+    R = get_rotation_matrix(omega.data.as_doubles[0], 
+                            omega.data.as_doubles[1], 
                             omega.data.as_doubles[2])
 
     cdef int i
@@ -92,7 +92,6 @@ cdef void rotate_coordinates(array coords, int n_atoms, array omega):
 cdef double get_energy(array coords_i, int n_atoms_i, array coords_j, int n_atoms_j):
     """
     Given two sets of coordinates calculate the replsive energy between them as
-
     energy = Σpairs 1/rij^8
 
     :param coords_i: (array) length = 3 * n_atoms_i e.g.
@@ -103,7 +102,9 @@ cdef double get_energy(array coords_i, int n_atoms_i, array coords_j, int n_atom
     cdef int i, j
     cdef double energy = 0.0
 
-    cdef double delta_x, delta_y, delta_z
+    cdef double delta_x
+    cdef double delta_y
+    cdef double delta_z
     cdef double d_sq
 
     for i in range(n_atoms_i):
@@ -179,16 +180,16 @@ cpdef get_minimised_coords(py_coords, py_other_coords):
     cdef array coords_i_copy = get_array(py_coords)
 
     # Grid values for the rotation-matrix defining rotation
-    cdef array w1s = get_array(np.linspace(-100, 100, 15))
-    cdef array w2s = get_array(np.linspace(-100, 100, 15))
-    cdef array w3s = get_array(np.linspace(-100, 100, 15))
+    cdef double[15] w1s = np.linspace(-100, 100, 15)
+    cdef double[15] w2s = np.linspace(-100, 100, 15)
+    cdef double[15] w3s = np.linspace(-100, 100, 15)
 
     # Iterators
     cdef int i, j, k
 
     # Minimum energy and the best ω vector (that generates the lowest energy)
     cdef double min_energy = 9999999.9
-    cdef double energy
+    cdef double energy = 0.0
 
     # current and optimal ω vectors
     cdef array omega = get_array(np.ones(3))
@@ -199,9 +200,9 @@ cpdef get_minimised_coords(py_coords, py_other_coords):
         for j in range(15):
             for k in range(15):
                 # Set the ω vector
-                omega.data.as_doubles[0] = w1s.data.as_doubles[i]
-                omega.data.as_doubles[1] = w2s.data.as_doubles[j]
-                omega.data.as_doubles[2] = w3s.data.as_doubles[k]
+                omega[0] = w1s[i]
+                omega[1] = w2s[j]
+                omega[2] = w3s[k]
 
                 # Rotate atoms in set i with omega in place
                 rotate_coordinates(coords_i, n_atoms_i, omega)
@@ -212,7 +213,9 @@ cpdef get_minimised_coords(py_coords, py_other_coords):
                 # If the energy is lower then reset best_omega
                 if energy < min_energy:
                     min_energy = energy
-                    best_omega = omega
+                    best_omega[0] = w1s[i]
+                    best_omega[1] = w2s[j]
+                    best_omega[2] = w3s[k]
 
                 # Reset the values of coordinates i
                 for n in range(3*n_atoms_i):

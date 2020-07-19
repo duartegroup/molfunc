@@ -1,7 +1,5 @@
 import numpy as np
 import os
-from rdkit import Chem
-from rdkit.Chem import AllChem
 from molfunc.exceptions import *
 
 
@@ -110,6 +108,11 @@ def smiles_to_atoms(smiles, n_confs=1):
     :return: (list(list(molfunc.atoms.Atom)) if n_confs > 1 else
              (list(molfunc.atoms.Atom))
     """
+    # Allow for molfunc usage without RDKit if no SMILES -> 3D conversion is
+    # required
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
     # Swap Fr for Li so RDKit generates something reasonable
     if 'Li' in smiles:
         raise MolFuncCritical('Cannot convert a molecule containing Li')

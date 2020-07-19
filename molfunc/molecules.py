@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import cdist
 import networkx as nx
@@ -69,11 +70,13 @@ class Molecule:
         return None
 
     @requires_atoms()
-    def print_xyz_file(self):
+    def print_xyz_file(self, title_line=''):
         """Print a standard .xyz file from the Molecule's atoms"""
 
         with open(f'{self.name}.xyz', 'w') as xyz_file:
-            print(self.n_atoms, '\n', file=xyz_file)
+            print(f'{self.n_atoms}\n'
+                  f'{title_line}', file=xyz_file)
+
             for atom in self.atoms:
                 x, y, z = atom.coord
                 print(f'{atom.label:<3}{x:^10.5f}{y:^10.5f}{z:^10.5f}',
@@ -419,7 +422,7 @@ class CombinedMolecule(Molecule):
 
         if fragment is not None:
             assert isinstance(fragment, FragmentMolecule)
-            self.fragments = [fragment for _ in range(self.n_fragments_to_add)]
+            self.fragments = [deepcopy(fragment) for _ in range(self.n_fragments_to_add)]
 
         if fragments is not None:
             assert all(isinstance(fr, FragmentMolecule) for fr in fragments)

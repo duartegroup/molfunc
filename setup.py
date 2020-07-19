@@ -12,12 +12,16 @@ else:
 extensions = [Extension('molfunc_ext', [f'molfunc/ext/molfunc_ext.{ext}'])]
 
 setup(name='molfunc',
-      version='1.0.0a3',
+      version='1.0.0b0',
       packages=['molfunc'],
+      package_data={'': ['fragments_lib/*']},
       license='MIT',
       author='Tom Young',
       url='https://github.com/duartegroup/molfunc',
       entry_points={'console_scripts': ['molfunc = molfunc.molfunc:main']},
       ext_modules=cythonize(extensions, language_level="3"),
       author_email='tom.young@chem.ox.ac.uk',
-      description='Fast molecular functionalisation')
+      description='Fast molecular functionalisation',
+      platforms='any',
+      long_description='molfunc enables adding molecular fragments e.g. '
+                       'Me, Ph etc. to existing 3D structures.')
