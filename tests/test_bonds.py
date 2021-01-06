@@ -12,3 +12,6 @@ def test_bonds():
 
     # Unknown should be ~ 1.5
     assert 1.4 < get_avg_bond_length('C', 'X') < 1.6
+
+    # Valid atoms but unknown interaction should be sensible
+    assert 2.0 < get_avg_bond_length('Os', 'Sn') < 3.0
