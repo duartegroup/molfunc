@@ -150,6 +150,10 @@ class CoreMolecule(Molecule):
                 raise DatomsNotValid(f'Can\'t functionalise an atom {i} - not '
                                      f'in the list of atoms')
 
+            if list(self.datom_idxs).count(i) > 1:
+                raise DatomsNotValid(f'Can\'t functionalise an atom {i} - not '
+                                     f'in the list of atoms')
+
             if self.atoms[i].valence == 1:
                 continue
 

@@ -59,7 +59,7 @@ for more examples.
 ***
 ## Citation
 
-If molfunc us used please consider citing the [autodE paper](https://doi.org/10.1002/anie.202011941) where it's outlined:
+If molfunc us used in a publication please consider citing the [autodE paper](https://doi.org/10.1002/anie.202011941) where it's outlined:
 
 T. A. Young, J. J. Silcock, A. J. Sterling, F. Duarte, *Angew. Chem. Int. Ed.*, 2021, **60**, 4266.
 
