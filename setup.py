@@ -12,7 +12,7 @@ else:
 extensions = [Extension('molfunc_ext', [f'molfunc/ext/molfunc_ext.{ext}'])]
 
 setup(name='molfunc',
-      version='1.0.0b0',
+      version='1.0.0',
       packages=['molfunc'],
       package_data={'': ['fragments_lib/*']},
       license='MIT',
