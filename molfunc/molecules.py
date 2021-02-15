@@ -426,7 +426,7 @@ class CombinedMolecule(Molecule):
 
         if fragments is not None:
             assert all(isinstance(fr, FragmentMolecule) for fr in fragments)
-            self.fragments = fragments
+            self.fragments = [deepcopy(frag) for frag in fragments]
 
         # If there are some fragments then build the combined molecule
         if len(self.fragments) > 0:
