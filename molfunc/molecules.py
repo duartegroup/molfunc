@@ -150,6 +150,10 @@ class CoreMolecule(Molecule):
                 raise DatomsNotValid(f'Can\'t functionalise an atom {i} - not '
                                      f'in the list of atoms')
 
+            if list(self.datom_idxs).count(i) > 1:
+                raise DatomsNotValid(f'Can\'t functionalise an atom {i} - not '
+                                     f'in the list of atoms')
+
             if self.atoms[i].valence == 1:
                 continue
 
@@ -426,7 +430,7 @@ class CombinedMolecule(Molecule):
 
         if fragments is not None:
             assert all(isinstance(fr, FragmentMolecule) for fr in fragments)
-            self.fragments = fragments
+            self.fragments = [deepcopy(frag) for frag in fragments]
 
         # If there are some fragments then build the combined molecule
         if len(self.fragments) > 0:

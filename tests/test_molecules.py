@@ -131,6 +131,11 @@ def test_core_molecule():
     with pytest.raises(DatomsNotValid):
         _ = CoreMolecule(name='ethane', xyz_filename=xyz_path, atoms_to_del=[1])
 
+    # Cannot replace the same atom more than once
+    with pytest.raises(DatomsNotValid):
+        _ = CoreMolecule(name='methane', smiles='C',
+                         atoms_to_del=[2, 2])
+
 
 def test_bad_core_molecule():
 
