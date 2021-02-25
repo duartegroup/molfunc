@@ -8,8 +8,9 @@
 **molfunc** is a Python tool for *func*tionalisation of 3D molecules. Given a
 [.xyz](https://en.wikipedia.org/wiki/XYZ_file_format) file molecular functionalisation is performed
 by specifying monovalent atoms in the structure to swap for a set of fragments given as their
-corresponding SMILES strings. The energy of the combined molecule is minimised with purely rigid body rotations. 
-Possible use cases include catalyst functionalisation, ligand modification and combinatorial molecule generation.
+corresponding SMILES strings. The energy of the combined molecule is minimised with purely rigid body rotations,
+as such, generated structures may require further (constrained) optimisation. Possible 
+use cases include catalyst functionalisation, ligand modification and combinatorial molecule generation.
 
 ***
 ## Installation

@@ -183,6 +183,10 @@ def test_fragment_molecule():
     with pytest.raises(RAtomNotFound):
         _ = FragmentMolecule(xyz_filename=xyz_path)
 
+    # Cannot initialise a fragment without a '[*]' present
+    with pytest.raises(RAtomNotFound):
+        _ = FragmentMolecule(smiles='C')
+
 
 def test_fragment_molecule2():
 
@@ -306,3 +310,13 @@ def test_combined_molecule_no_nn():
     with pytest.raises(CombinationFailed):
         _ = CombinedMolecule(core_mol=methane,
                              frag_smiles='C[*]')
+
+
+def test_combined_molecule_end_atoms():
+
+    # Test that the final atoms can be functionalised
+    core = CoreMolecule(atoms=atoms, atoms_to_del=[5, 4])
+
+    propane = CombinedMolecule(core, frag_smiles='COC1=CC=C([*])C=C1')
+    propane.print_xyz_file()
+    assert coordinates_are_resonable(propane.get_coordinates())
