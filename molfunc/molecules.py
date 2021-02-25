@@ -240,7 +240,8 @@ class FragmentMolecule(Molecule):
 
         # Ensure there is one R
         if not any(atom.label == 'R' for atom in self.atoms):
-            raise RAtomNotFound
+            raise RAtomNotFound('Fragment atoms must contain an atom with '
+                                'label R')
 
         # Find the first (hopefully only) monovalent R atom in the molecule
         for edge in self.graph.edges:
@@ -250,7 +251,8 @@ class FragmentMolecule(Molecule):
                     continue
 
                 if self.atoms[i].valence > 1:
-                    raise RAtomInvalidValence
+                    raise RAtomInvalidValence('Atom to delete had >1 bonded '
+                                              'atom.')
 
                 return NNAtom(atom=self.atoms[j])
 
@@ -337,6 +339,10 @@ class FragmentMolecule(Molecule):
 
         :param atoms: (list(molfunc.atom.Atom)) List of atoms
         """
+        if smiles is not None and '[*]' not in smiles:
+            raise RAtomNotFound('No "[*]" found in the SMILES string, it is '
+                                'required!')
+
         super().__init__(name, xyz_filename, smiles, atoms)
 
         # Get the nearest neighbour atom to R then delete the R atom
