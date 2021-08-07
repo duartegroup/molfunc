@@ -110,8 +110,14 @@ def smiles_to_atoms(smiles, n_confs=1):
     """
     # Allow for molfunc usage without RDKit if no SMILES -> 3D conversion is
     # required
-    from rdkit import Chem
-    from rdkit.Chem import AllChem
+    try:
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError('RDKit was not installed, thus cannot transform '
+                                  'SMILES -> 3D geometry. Install with\n '
+                                  'conda install rdkit -c conda-forge')
 
     # Swap Fr for Li so RDKit generates something reasonable
     if 'Li' in smiles:

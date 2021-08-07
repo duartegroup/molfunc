@@ -1,8 +1,4 @@
-rdkit
 numpy
 scipy
 networkx
-pytest
-pytest-cov
-codecov
 cython
