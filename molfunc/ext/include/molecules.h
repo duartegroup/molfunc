@@ -16,7 +16,7 @@ namespace molfunc{
             vector<Atom> atoms;
 
             Molecule();
-            Molecule(string &xyz_filename);
+            Molecule(string xyz_filename);
 
             unsigned long n_atoms();
 

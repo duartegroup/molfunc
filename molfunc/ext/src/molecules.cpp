@@ -10,7 +10,7 @@ namespace molfunc{
 
     Molecule::Molecule() = default;
 
-    Molecule::Molecule(string &xyz_filename) {
+    Molecule::Molecule(string xyz_filename) {
         /*********************************************************
          * Construct a Molecule from a standard .xyz file
          * https://en.wikipedia.org/wiki/XYZ_file_format.
