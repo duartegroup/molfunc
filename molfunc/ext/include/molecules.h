@@ -16,11 +16,17 @@ namespace molfunc{
             vector<Atom> atoms;
 
             Molecule();
-            Molecule(string xyz_filename);
+            Molecule(const string& xyz_filename);
 
-            unsigned long n_atoms();
+            unsigned long n_atoms() const;
+            double distance(unsigned long i, unsigned long j);
 
             void print_xyz_file();
+
+        protected:
+            void set_atoms(const string& xyz_filename);
+            void construct_graph();
+            bool is_bonded_on_distance(unsigned long i, unsigned long j);
 
     };
 }

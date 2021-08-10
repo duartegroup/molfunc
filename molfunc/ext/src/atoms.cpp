@@ -1,9 +1,11 @@
 #include "atoms.h"
 #include <utility>
-#include "vector"
-#include "stdexcept"
+#include <algorithm>
+#include <vector>
+#include <stdexcept>
 
 using namespace std;
+
 
 namespace molfunc{
 
@@ -46,5 +48,38 @@ namespace molfunc{
         }
     }
 
+    unsigned int Atom::atomic_number(){
+        /*********************************************************
+         * Determine the atomic number of this element by its
+         * symbol.
+         *
+         * Returns:
+         *      (int): Atomic number [1, 118]
+         *
+         * Raises:
+         *      (runtime_error): If the symbol cannot be found in
+         *                    the periodic table of known elements
+         ********************************************************/
+
+        vector<string> elements = {"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg",
+                                   "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr",
+                                   "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br",
+                                   "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd",
+                                   "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La",
+                                   "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er",
+                                   "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au",
+                                   "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th",
+                                   "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md",
+                                   "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn",
+                                   "Nh", "Fl", "Mc", "Lv", "Ts", "Og"};
+
+        for (unsigned int i=0; i<elements.size(); i++){
+            if (elements[i] == symbol){
+                return i + 1;
+            }
+        }
+
+        throw runtime_error("Failed to find atomic number for "+symbol);
+    }
 
 }

@@ -87,12 +87,12 @@ namespace molfunc{
             throw runtime_error("Self referring are not supported");
         }
 
-        if (nodes.find(u) != nodes.end()){
+        if (nodes.find(u) == nodes.end()){
             throw runtime_error("Node "+to_string(u)+" not present, cannot "
                                 "add edge");
         }
 
-        if (nodes.find(v) != nodes.end()){
+        if (nodes.find(v) == nodes.end()){
             throw runtime_error("Node "+to_string(v)+" not present, cannot "
                                                      "add edge");
         }

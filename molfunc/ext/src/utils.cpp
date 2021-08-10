@@ -37,8 +37,13 @@ namespace molfunc{
         return elems;
     }
 
+    bool utils::is_close(double a, double b, double tol){
+        return abs(a - b) < tol;
+    }
+
     bool utils::is_close(double a, double b){
-        return abs(a - b) < 1E-8;
+        // Are two numbers close with a default tolerance
+        return utils::is_close(a, b, 1E-8);
     }
 
     bool utils::is_close(vector<double> a, vector<double> b){

@@ -1,5 +1,6 @@
 #include "atoms.h"
 #include "molecules.h"
+#include "utils.h"
 #include "stdexcept"
 #include "vector"
 #include <iostream>
@@ -11,7 +12,8 @@ using namespace std;
 using namespace molfunc;
 
 
-TEST_CASE("Test a molecule can be constructed from a xyz file"){
+Molecule methane_molecule(){
+    // Generate a reasonable methane molecule
 
     ofstream xyz_file ("methane.xyz");
     if (xyz_file.is_open()){
@@ -25,14 +27,33 @@ TEST_CASE("Test a molecule can be constructed from a xyz file"){
         xyz_file.close();
     }
     else {
-        cout << "Unable to open methane.xyz";
-        return;
+        throw runtime_error("Unable to open methane.xyz");
     }
-
     Molecule methane = Molecule("methane.xyz");
+    remove("methane.xyz");
+
+    return methane;
+}
+
+
+TEST_CASE("Test a molecule can be constructed from a xyz file"){
+
+    Molecule methane = methane_molecule();
 
     REQUIRE(methane.n_atoms() == 5);
-    remove("methane.xyz");
+    REQUIRE(utils::is_close(methane.distance(0, 1),
+                            1.1,
+                            0.1));
+}
+
+
+TEST_CASE("Test a graph is constructed for a molecule"){
+
+    Molecule methane = methane_molecule();
+
+    REQUIRE(methane.graph.n_nodes() == 5);
+    REQUIRE(methane.graph.n_edges() == 4);
+
 }
 
 

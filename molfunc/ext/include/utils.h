@@ -12,6 +12,7 @@ namespace molfunc{
         vector<string> split(const string &s, char delim);
 
         bool is_close(double a, double b);
+        bool is_close(double a, double b, double tol);
         bool is_close(vector<double> a, vector<double> b);
     }
 }
