@@ -11,9 +11,13 @@ add_library(molfunc STATIC
             include/utils.h src/utils.cpp )
 
 find_package(Catch2 REQUIRED)
+
+
 add_executable(test
                tests/test_main.cpp
-               tests/test_atoms.cpp tests/test_molecule.cpp)
+               tests/test_atoms.cpp
+               tests/test_molecule.cpp
+               tests/test_graphs.cpp)
 
 target_link_libraries(test PRIVATE Catch2::Catch2)
 target_link_libraries(test PUBLIC molfunc)

@@ -113,4 +113,46 @@ namespace molfunc{
         return edges.size();
     }
 
+    unsigned long Graph::n_neighbours(unsigned long u){
+        /*********************************************************
+         * Number of neighbours for a particular atom index (node)
+         *
+         * Arguments:
+         *      u (int): Atom index
+         *
+         *  Raises:
+         *      (runtime_error): If the two atom indexes are
+         *                       not present in the graph
+         *
+         *  Returns:
+         *      (int):
+         ********************************************************/
+        if (nodes.find(u) == nodes.end()){
+            throw runtime_error("Node "+to_string(u)+" not present");
+        }
+
+        return nodes[u].neighbours.size();
+    }
+
+    string Graph::atomic_symbol(unsigned long u){
+        /*********************************************************
+         * Atomic symbol a particular atom index (node)
+         *
+         * Arguments:
+         *      u (int): Atom index
+         *
+         *  Raises:
+         *      (runtime_error): If the two atom indexes are
+         *                       not present in the graph
+         *  Returns:
+         *      (int):
+         ********************************************************/
+        if (nodes.find(u) == nodes.end()){
+            throw runtime_error("Node "+to_string(u)+" not present. "
+                                " Cannot find the atomic symbol");
+        }
+
+        return nodes[u].symbol;
+    }
+
 }

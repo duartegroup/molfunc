@@ -16,12 +16,12 @@ namespace molfunc{
             vector<Atom> atoms;
 
             Molecule();
-            Molecule(const string& xyz_filename);
+            explicit Molecule(const string& xyz_filename);
 
             unsigned long n_atoms() const;
             double distance(unsigned long i, unsigned long j);
 
-            void print_xyz_file();
+            void print_xyz_file(const string& filename);
 
         protected:
             void set_atoms(const string& xyz_filename);

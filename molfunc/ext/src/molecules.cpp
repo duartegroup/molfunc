@@ -1,5 +1,7 @@
 #include <fstream>
+#include <iostream>
 #include <string>
+#include <iomanip>
 #include <cmath>
 #include "molecules.h"
 #include "utils.h"
@@ -41,27 +43,29 @@ namespace molfunc{
          ********************************************************/
 
         string line, item;
+        int line_n = 0;
         ifstream xyz_file (xyz_filename);
 
-        // Declared number of atoms
-        int decl_n_atoms = 0;
+        int decl_n_atoms = 0;  // Declared number of atoms
 
         // Iterate through the xyz file
         while (getline(xyz_file, line, '\n')) {
+            line_n += 1;
 
-            if (line.empty()) {   // Ignore any blank lines
-                continue;
-            }
 
-            if (decl_n_atoms == 0) {
+            if (line_n == 1) {
                 decl_n_atoms = stoi(line);
                 continue;
             }
 
+            if (line_n == 2 || line.empty()){
+                continue;  // Skip the title line or any blank lines
+            }
+
+
             vector<string> xyz_items = utils::split(line, ' ');
             if (xyz_items.size() != 4){
-                throw runtime_error("Malformatted xyz file, expecting a "
-                                    "*A  0.0 0.0 0.0* structure to the line");
+                throw runtime_error("Malformatted xyz file line: " + line);
             }
 
             atoms.emplace_back(xyz_items[0],         // Atomic symbol
@@ -184,7 +188,37 @@ namespace molfunc{
     }
 
     unsigned long Molecule::n_atoms() const {
+        // Number of atoms in this molecule
         return atoms.size();
+    }
+
+    void Molecule::print_xyz_file(const string& filename){
+        /*********************************************************
+         * Generate a standard .xyz file for a molecule
+         *
+         * Arguments:
+         *      filename (str):
+         ********************************************************/
+
+        ofstream xyz_file (filename);
+
+        if (xyz_file.is_open()){
+
+            xyz_file << fixed;
+            xyz_file << setprecision(6);
+            xyz_file << to_string(n_atoms()) << '\n' << "molfunc generated" << '\n';
+
+            for (auto atom: atoms){
+                xyz_file << atom.symbol   << "    "
+                         << atom.coord[0] << "    "
+                         << atom.coord[1] << "    "
+                         << atom.coord[2] << "    " <<  '\n';
+            }
+
+            xyz_file.close();
+        }
+
+        else throw runtime_error("Cannot open "+filename);
     }
 
 }

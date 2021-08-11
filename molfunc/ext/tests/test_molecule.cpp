@@ -1,8 +1,6 @@
-#include "atoms.h"
 #include "molecules.h"
 #include "utils.h"
 #include "stdexcept"
-#include "vector"
 #include <iostream>
 #include <fstream>
 #include "cstdio"
@@ -44,6 +42,13 @@ TEST_CASE("Test a molecule can be constructed from a xyz file"){
     REQUIRE(utils::is_close(methane.distance(0, 1),
                             1.1,
                             0.1));
+
+    // Printing the molecule should be able to be read (i.e. be valid)
+    methane.print_xyz_file("tmp.xyz");
+
+    Molecule regen_methane = Molecule("tmp.xyz");
+    REQUIRE(regen_methane.n_atoms() == 5);
+    remove("tmp.xyz");
 }
 
 
@@ -53,6 +58,9 @@ TEST_CASE("Test a graph is constructed for a molecule"){
 
     REQUIRE(methane.graph.n_nodes() == 5);
     REQUIRE(methane.graph.n_edges() == 4);
+
+    REQUIRE(methane.graph.n_neighbours(0) == 4);
+    REQUIRE(methane.graph.n_neighbours(1) == 1);
 
 }
 
