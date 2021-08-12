@@ -18,6 +18,7 @@ namespace molfunc{
             void translate(vector<double> &vec);
 
             unsigned int atomic_number();
+            bool is_dummy();
 
             explicit Atom();
             explicit Atom(string symbol,

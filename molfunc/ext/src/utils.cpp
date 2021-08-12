@@ -1,6 +1,5 @@
 #include "string"
 #include <sstream>
-#include <fstream>
 #include <cmath>
 #include "utils.h"
 
@@ -36,6 +35,33 @@ namespace molfunc{
         }
         return elems;
     }
+
+    bool utils::ends_with(const string &s,
+                   const string &ending){
+        /*********************************************************
+         *  Does a string end with another string?
+         *  Shamelessly stolen from:
+         *  https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c
+         *
+         *  Arguments:
+         *      s (string):
+         *
+         *      ending (string):
+         *
+         *  Returns:
+         *      (bool):
+         *
+         *  Example:
+         *      ends_with("filename.xyz", ".xyz") // -> true
+         ********************************************************/
+
+        if (s.length() < ending.length()){
+            return false;
+        }
+
+        return (0 == s.compare(s.length() - ending.length(), ending.length(), ending));
+    }
+
 
     bool utils::is_close(double a, double b, double tol){
         return abs(a - b) < tol;

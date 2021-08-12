@@ -28,6 +28,10 @@ namespace molfunc{
          *      // mol.n_atoms() -> 5
          ********************************************************/
 
+        if (!utils::ends_with(xyz_filename, ".xyz")){
+            throw runtime_error("Expecting a .xyz file, had: "+xyz_filename);
+        }
+
         set_atoms(xyz_filename);
         construct_graph();
 
@@ -46,6 +50,10 @@ namespace molfunc{
         int line_n = 0;
         ifstream xyz_file (xyz_filename);
 
+        if (!xyz_file.is_open()){
+            throw runtime_error("Failed to open: "+xyz_filename);
+        }
+
         int decl_n_atoms = 0;  // Declared number of atoms
 
         // Iterate through the xyz file
@@ -58,10 +66,12 @@ namespace molfunc{
                 continue;
             }
 
-            if (line_n == 2 || line.empty()){
-                continue;  // Skip the title line or any blank lines
+            if (line_n == 2){
+                xyz_title_line = line;
+                continue;  // Title line
             }
 
+            if (line.empty()) continue; // Skip any blank lines
 
             vector<string> xyz_items = utils::split(line, ' ');
             if (xyz_items.size() != 4){
@@ -151,6 +161,11 @@ namespace molfunc{
                                 " At least one was outside the set of atoms");
         }
 
+        if (atoms[i].is_dummy() || atoms[j].is_dummy()){
+            // Dummy atoms are by definition bonded to the closest atom
+            return false;
+        }
+
         unsigned int z_i = atoms[i].atomic_number();
         unsigned int z_j = atoms[j].atomic_number();
 
@@ -185,9 +200,30 @@ namespace molfunc{
                 }
             }// j
         } // i
+
+        // Bond any dummy atoms to the closest neighbour
+        double min_distance = INFINITY;
+        unsigned long closest_idx;
+
+        for (unsigned long i=0; i < n_atoms(); i++){
+
+            if (!atoms[i].is_dummy()) continue;
+
+            for (unsigned long j=0; j < n_atoms(); j++){
+
+                double dist = distance(i, j);
+
+                if (i != j && dist < min_distance) {
+                    closest_idx = j;
+                    min_distance = dist;
+                }
+            }// j
+
+            graph.add_edge(i, closest_idx);
+        } // i
     }
 
-    unsigned long Molecule::n_atoms() const {
+    unsigned long Molecule::n_atoms() {
         // Number of atoms in this molecule
         return atoms.size();
     }

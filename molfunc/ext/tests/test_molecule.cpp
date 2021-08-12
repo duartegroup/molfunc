@@ -24,9 +24,8 @@ Molecule methane_molecule(){
                     "H          1.20978       -2.40119       -0.31787\n";
         xyz_file.close();
     }
-    else {
-        throw runtime_error("Unable to open methane.xyz");
-    }
+    else throw runtime_error("Unable to open methane.xyz");
+
     Molecule methane = Molecule("methane.xyz");
     remove("methane.xyz");
 
@@ -52,6 +51,25 @@ TEST_CASE("Test a molecule can be constructed from a xyz file"){
 }
 
 
+TEST_CASE("Test throws if xyz file does not exist"){
+    REQUIRE_THROWS(Molecule("x.xyz"));
+}
+
+TEST_CASE("Test throws if not an .xyz file"){
+
+    ofstream xyz_file ("tmp.txt");
+    if (xyz_file.is_open()) {
+        xyz_file << "something" << '\n';
+        xyz_file.close();
+
+        REQUIRE_THROWS(Molecule("tmp.txt"));
+        remove("tmp.txt");
+    }
+    else throw runtime_error("Unable to open tmp.txt");
+
+}
+
+
 TEST_CASE("Test a graph is constructed for a molecule"){
 
     Molecule methane = methane_molecule();
@@ -65,5 +83,14 @@ TEST_CASE("Test a graph is constructed for a molecule"){
 }
 
 
+TEST_CASE("Test bond definitions"){
 
+    Molecule mol = Molecule();
+    mol.atoms.push_back(Atom("Os", 0.0, 0.0, 0.0));
+    mol.atoms.push_back(Atom("Sn", 2.5, 0.0, 0.0));
+    mol.construct_graph();
 
+    // The twp atoms are bonded
+    REQUIRE(mol.graph.n_neighbours(0) == 1);
+
+}

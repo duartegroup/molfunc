@@ -61,7 +61,8 @@ namespace molfunc{
          *                    the periodic table of known elements
          ********************************************************/
 
-        vector<string> elements = {"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg",
+        // Defines a special dummy atom ("R") with atomic number 0
+        vector<string> elements = {"R", "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg",
                                    "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr",
                                    "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br",
                                    "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd",
@@ -75,11 +76,13 @@ namespace molfunc{
 
         for (unsigned int i=0; i<elements.size(); i++){
             if (elements[i] == symbol){
-                return i + 1;
+                return i;
             }
         }
 
         throw runtime_error("Failed to find atomic number for "+symbol);
     }
+
+    bool Atom::is_dummy(){return (atomic_number() == 0);}
 
 }
