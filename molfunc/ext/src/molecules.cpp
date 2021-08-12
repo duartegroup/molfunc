@@ -37,6 +37,23 @@ namespace molfunc{
 
     }
 
+    Molecule::Molecule(const vector<Atom>& atoms){
+        /*********************************************************
+         * Construct a Molecule from a set of atoms
+         *
+         * Arguments:
+         *      Atom (list(Atom)):
+         *
+         * Example:
+         *      vector<Atom> atoms = {Atom("H", 0.0, 0.0, 0.0)};
+         *      Molecule mol = Molecule(atoms);
+         *      // mol.n_atoms() -> 1
+         ********************************************************/
+
+        this->atoms = atoms;
+        construct_graph();
+    }
+
     void Molecule::set_atoms(const string& xyz_filename){
         /*********************************************************
          * Construct a Molecule from a standard .xyz file
@@ -51,6 +68,9 @@ namespace molfunc{
         ifstream xyz_file (xyz_filename);
 
         if (!xyz_file.is_open()){
+            string file_path = __FILE__;
+            string dir_path = file_path.substr(0, file_path.rfind('/'));
+            cout<<dir_path<<endl;
             throw runtime_error("Failed to open: "+xyz_filename);
         }
 

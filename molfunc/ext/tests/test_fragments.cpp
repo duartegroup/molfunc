@@ -37,5 +37,11 @@ TEST_CASE("Test fragment initialisation with aliases"){
 
     // Should have three aliases for a bromide fragment
     REQUIRE(br.aliases.size() == 3);
+}
+
+
+TEST_CASE("Test fragment library construction"){
+
+    REQUIRE(FragmentLib::instance().fragments.size() > 0);
 
 }

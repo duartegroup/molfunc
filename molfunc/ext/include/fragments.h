@@ -1,6 +1,8 @@
 #ifndef MOLFUNC_EXT_FRAGMENTS_H
 #define MOLFUNC_EXT_FRAGMENTS_H
 #include <vector>
+#include <string>
+#include "atoms.h"
 #include "molecules.h"
 
 
@@ -13,9 +15,11 @@ namespace molfunc{
         public:
             vector<string> aliases;
 
+            // Constructors
             Fragment();
-            Fragment(const string &xyz_filename);
-
+            explicit Fragment(const string& xyz_filename);
+            Fragment(const vector<Atom>& atoms,
+                     const string& title);
     };
 
 
@@ -24,15 +28,15 @@ namespace molfunc{
         // (https://stackoverflow.com/questions/86582/singleton-how-should-it-be-used)
 
         private:
-            constexpr FragmentLib();
-            // Stop the compiler generating methods of copy the object
-            FragmentLib(FragmentLib const& copy);            // Not Implemented
-            FragmentLib& operator=(FragmentLib const& copy); // Not Implemented
+            FragmentLib();
 
         public:
-            static vector<Fragment> fragments;
+            FragmentLib(FragmentLib const& copy) = delete;            // Not Implemented
+            FragmentLib& operator=(FragmentLib const& copy) = delete; // Not Implemented
 
-            static FragmentLib& getInstance(){
+            vector<Fragment> fragments;
+
+            static FragmentLib& instance(){
                 // The only instance
                 // Guaranteed to be lazy initialized and destroyed correctly
                 static FragmentLib instance;

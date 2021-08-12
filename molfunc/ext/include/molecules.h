@@ -17,6 +17,7 @@ namespace molfunc{
 
             Molecule();
             explicit Molecule(const string& xyz_filename);
+            explicit Molecule(const vector<Atom>& atoms);
 
             unsigned long n_atoms();
             double distance(unsigned long i, unsigned long j);
