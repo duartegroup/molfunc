@@ -50,6 +50,10 @@ TEST_CASE("Test a molecule can be constructed from a xyz file"){
                             1.1,
                             0.1));
 
+    // Possible pointer dereference, so check remains identical value
+    REQUIRE(utils::is_close(methane.atoms[0].x(), 1.57959));
+    REQUIRE(utils::is_close(methane.atoms[0].x(), 1.57959));
+
     // Printing the molecule should be able to be read (i.e. be valid)
     methane.print_xyz_file("tmp.xyz");
 
@@ -133,5 +137,26 @@ TEST_CASE("Test core molecule construction"){
     REQUIRE_THROWS(CoreMolecule("methane.xyz"));
 
     remove("methane.xyz");
+}
+
+
+TEST_CASE("Test molecule translation"){
+    Molecule methane = methane_molecule();
+
+    array<double, 3> vec = {-methane.coordinates[0][0],
+                            -methane.coordinates[0][1],
+                            -methane.coordinates[0][2]};
+    methane.translate(vec);
+    methane.print_xyz_file("tmp.xyz");
+
+    Molecule regen_methane = Molecule("tmp.xyz");
+
+    // Translating by the negative of the Origin-C vecotr should
+    // leave the carbon at (0, 0, 0) i.e. the origin
+    REQUIRE(utils::is_close(regen_methane.atoms[0].x(), 0.0));
+    REQUIRE(utils::is_close(regen_methane.atoms[0].y(), 0.0));
+    REQUIRE(utils::is_close(regen_methane.atoms[0].z(), 0.0));
+
+    remove("tmp.xyz");
 }
 

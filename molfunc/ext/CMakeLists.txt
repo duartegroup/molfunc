@@ -9,7 +9,9 @@ add_library(molfunc STATIC
             include/molecules.h src/molecules.cpp
             include/graph.h src/graph.cpp
             include/utils.h src/utils.cpp
-            include/fragments.h src/fragments.cpp)
+            include/fragments.h src/fragments.cpp
+            include/combined.h src/combined.cpp
+            include/species.h src/species.cpp)
 
 find_package(Catch2 REQUIRED)
 
@@ -20,7 +22,7 @@ add_executable(test
                tests/test_molecule.cpp
                tests/test_graphs.cpp
                tests/test_fragments.cpp
-               tests/test_utils.cpp)
+               tests/test_utils.cpp tests/test_combination.cpp)
 
 target_link_libraries(test PRIVATE Catch2::Catch2)
 target_link_libraries(test PUBLIC molfunc)

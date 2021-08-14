@@ -18,6 +18,7 @@ namespace molfunc{
             // Constructors
             Fragment();
             explicit Fragment(const string& xyz_filename);
+            Fragment(const Fragment &fragment);
 
     };
 

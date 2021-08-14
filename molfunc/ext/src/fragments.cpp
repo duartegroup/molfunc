@@ -44,6 +44,11 @@ namespace molfunc{
         }
     }
 
+    Fragment::Fragment(const Fragment &fragment) : Molecule(fragment) {
+        // Copy constructor
+        this->aliases = fragment.aliases;
+    }
+
     FragmentLib::FragmentLib() {
         /*********************************************************
          * Construct the fragment library from .xyz files in the
@@ -103,7 +108,9 @@ namespace molfunc{
             for (auto &alias : fragment.aliases){
 
                 if (alias == l_name){
-                    return fragment;
+
+                    // Need to copy the fragment as it will be modified in-place
+                    return Fragment(fragment);
                 }
             }// aliases
         }// fragments

@@ -1,15 +1,13 @@
 #include <fstream>
-#include <iostream>
 #include <string>
-#include <iomanip>
 #include <cmath>
-#include <numeric>
 #include "memory"
 #include "molecules.h"
 #include "utils.h"
 
 
 using namespace std;
+
 
 namespace molfunc{
 
@@ -163,6 +161,21 @@ namespace molfunc{
         return sqrt(sq_dist);
     }
 
+    void Molecule::translate(array<double, 3> vec){
+        /*******************************************************************
+         * Translate all the atoms in this molecule by a 3D vector (Å)
+         *
+         * Arguments:
+         *      vec (list(float)):
+         ******************************************************************/
+
+        for (auto &coord : coordinates){
+            coord[0] += vec[0];
+            coord[1] += vec[1];
+            coord[2] += vec[2];
+        }
+    }
+
     bool Molecule::is_bonded_on_distance(unsigned long i, unsigned long j) {
         /*******************************************************************
          * Are two atoms bonded based on a distance criteria?
@@ -263,62 +276,7 @@ namespace molfunc{
         } // i
     }
 
-    unsigned long Molecule::n_atoms() const {
-        // Number of atoms in this molecule
-        return atoms.size();
-    }
-
-    unsigned long Molecule::n_masked_atoms(){
-        // Number of masked atoms in this system
-
-        unsigned long n_atoms = 0;
-        for (auto &atom : atoms){
-            if (atom.masked) n_atoms++;
-        }
-        return n_atoms;
-    }
-
-    unsigned long Molecule::n_unmasked_atoms() {return n_atoms() - n_masked_atoms();}
-
-    void Molecule::print_xyz_file(const string& filename){
-        /*********************************************************
-         * Generate a standard .xyz file for a molecule
-         *
-         * Arguments:
-         *      filename (str):
-         ********************************************************/
-
-        if (atoms.empty()){
-            throw runtime_error("Could not print a .xyz file- had no atoms");
-        }
-
-        ofstream xyz_file (filename);
-
-        if (xyz_file.is_open()){
-
-            xyz_file << fixed;
-            xyz_file << setprecision(6);
-
-            // ---------------------------------------------------
-            xyz_file << to_string(n_unmasked_atoms()) << '\n'
-                     << "molfunc generated" << '\n';
-
-            for (auto &atom: atoms){
-
-                if (atom.masked) continue;  // Skip masked atoms
-
-                xyz_file << atom.symbol   << "    "
-                         << atom.x() << "    "
-                         << atom.y() << "    "
-                         << atom.z() << "    " <<  '\n';
-            }
-            // ---------------------------------------------------
-
-            xyz_file.close();
-        }
-
-        else throw runtime_error("Cannot open "+filename);
-    }
+    CoreMolecule::CoreMolecule() = default;
 
     CoreMolecule::CoreMolecule(const string &xyz_filename):
                               Molecule(xyz_filename){

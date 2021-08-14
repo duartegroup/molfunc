@@ -42,7 +42,6 @@ void print_br_xyz(){
 }
 
 
-
 TEST_CASE("Test fragment initialisation with aliases"){
 
     Fragment br = br_fragment();
@@ -65,6 +64,7 @@ TEST_CASE("Test retrieval from fragment library"){
     auto frag = FragmentLib::instance().fragment("Br");
 
     REQUIRE(frag.n_atoms() == 2);  // Br and R atom
+    REQUIRE(frag.n_unmasked_atoms() == 1); // Br
 
     REQUIRE_THROWS(FragmentLib::instance().fragment("Non-existing-frag"));
 }
@@ -75,4 +75,21 @@ TEST_CASE("Test fragment constructor throws with no dummy atoms"){
     print_br_xyz();
     REQUIRE_THROWS(Fragment("br.xyz"));
     remove("br.xyz");
+}
+
+
+TEST_CASE("Test multiple fragments from lib"){
+
+    Fragment br_1 = FragmentLib::instance().fragment("Br");
+    auto coord = br_1.coordinates[0];
+
+    br_1.translate({1.0, 0.0, 0.0});
+
+    // Should hava translated the atom along the x axis
+    REQUIRE(!utils::is_close(coord[0], br_1.coordinates[0][0]));
+
+    // but a new Br fragment should not have also been translated
+    Fragment br_2 = FragmentLib::instance().fragment("Br");
+
+    REQUIRE(utils::is_close(coord[0], br_2.coordinates[0][0]));
 }
