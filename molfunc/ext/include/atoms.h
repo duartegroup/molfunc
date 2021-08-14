@@ -1,7 +1,8 @@
 #ifndef MOLFUNC_ATOMS_H
 #define MOLFUNC_ATOMS_H
 #include "string"
-#include "vector"
+#include "array"
+#include <memory>
 
 
 using namespace std;
@@ -10,21 +11,32 @@ namespace molfunc{
 
     class Atom {
 
+        private:
+            array<double, 3> coord = {0.0, 0.0, 0.0};
+
         public:
             string symbol = "X";
-            vector<double> coord = vector<double>(3, 0.0);
+
             bool masked = false;
 
-            void translate(vector<double> &vec);
+            void translate(array<double, 3> &vec);
 
-            unsigned int atomic_number();
-            bool is_dummy();
+            [[nodiscard]] unsigned int atomic_number() const;
+            [[nodiscard]] bool is_dummy() const;
 
             explicit Atom();
-            explicit Atom(string symbol,
+            explicit Atom(const string& symbol,
                           double x,
                           double y,
                           double z);
+
+            double* ptr_x = nullptr;
+            double* ptr_y = nullptr;
+            double* ptr_z = nullptr;
+
+            double x();
+            double y();
+            double z();
     };
 
 }

@@ -1,8 +1,9 @@
 #include "atoms.h"
 #include <utility>
 #include <algorithm>
-#include <vector>
+#include <array>
 #include <stdexcept>
+#include "iostream"
 
 using namespace std;
 
@@ -12,7 +13,7 @@ namespace molfunc{
     // Default constructors are required for Cython wrapping
     Atom::Atom() = default;
 
-    Atom::Atom(string symbol, double x, double y, double z) {
+    Atom::Atom(const string& symbol, double x, double y, double z) {
         /*********************************************************
          * Construct an atom from an atomic symbol and its position
          * in 3D space
@@ -24,12 +25,14 @@ namespace molfunc{
          *      z (float):                 z coordinate (Å)
          ********************************************************/
 
-        this->symbol = std::move(symbol);
-        this->coord = vector<double>{x, y, z};
+        this->symbol = symbol;
+        this->coord = {x, y, z};
+
+        if (symbol == "R") masked = true;
 
     }
 
-    void Atom::translate(vector<double> &vec){
+    void Atom::translate(array<double, 3> &vec){
         /*********************************************************
          * Translate an atom by a 3-component vector (Å)
          *
@@ -39,16 +42,13 @@ namespace molfunc{
          *  Raises:
          *      (runtime_error):
          ********************************************************/
-        if (vec.size() != 3){
-            throw runtime_error("Must have vector of length 3 to translate");
-        }
 
         for (int i=0; i<3; i++){
             coord[i] += vec[i];
         }
     }
 
-    unsigned int Atom::atomic_number(){
+    unsigned int Atom::atomic_number() const{
         /*********************************************************
          * Determine the atomic number of this element by its
          * symbol.
@@ -83,6 +83,20 @@ namespace molfunc{
         throw runtime_error("Failed to find atomic number for "+symbol);
     }
 
-    bool Atom::is_dummy(){return (atomic_number() == 0);}
+    bool Atom::is_dummy() const{return (symbol == "R");}
 
+    double Atom::x(){
+        if (ptr_x != nullptr) coord[0] = *ptr_x;
+        return coord[0];
+    }
+
+    double Atom::y(){
+        if (ptr_y != nullptr) coord[1] = *ptr_y;
+        return coord[1];
+    }
+
+    double Atom::z(){
+        if (ptr_z != nullptr) coord[2] = *ptr_z;
+        return coord[2];
+    }
 }

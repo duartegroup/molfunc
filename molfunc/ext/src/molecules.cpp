@@ -3,6 +3,8 @@
 #include <string>
 #include <iomanip>
 #include <cmath>
+#include <numeric>
+#include "memory"
 #include "molecules.h"
 #include "utils.h"
 
@@ -33,8 +35,8 @@ namespace molfunc{
         }
 
         set_atoms(xyz_filename);
+        assign_coordinates();
         construct_graph();
-
     }
 
     Molecule::Molecule(const vector<Atom>& atoms){
@@ -51,6 +53,7 @@ namespace molfunc{
          ********************************************************/
 
         this->atoms = atoms;
+        assign_coordinates();
         construct_graph();
     }
 
@@ -70,7 +73,6 @@ namespace molfunc{
         if (!xyz_file.is_open()){
             string file_path = __FILE__;
             string dir_path = file_path.substr(0, file_path.rfind('/'));
-            cout<<dir_path<<endl;
             throw runtime_error("Failed to open: "+xyz_filename);
         }
 
@@ -81,14 +83,14 @@ namespace molfunc{
             line_n += 1;
 
 
-            if (line_n == 1) {
+            if (line_n == 1) {          // Number of atoms line
                 decl_n_atoms = stoi(line);
                 continue;
             }
 
-            if (line_n == 2){
+            if (line_n == 2){           // Title line
                 xyz_title_line = line;
-                continue;  // Title line
+                continue;
             }
 
             if (line.empty()) continue; // Skip any blank lines
@@ -102,6 +104,7 @@ namespace molfunc{
                                stod(xyz_items[1]),   // x
                                stod(xyz_items[2]),   // y
                                stod(xyz_items[3]));  // z
+
         }
         xyz_file.close();
 
@@ -111,6 +114,23 @@ namespace molfunc{
             + to_string(decl_n_atoms));
         }
 
+
+    }
+
+    void Molecule::assign_coordinates(){
+        /*******************************************************************
+         * Assign the coordinates for this molecule in a memory-contiguous
+         * way
+         ******************************************************************/
+        coordinates.reserve(n_atoms());
+
+        for (auto &atom : atoms){
+            coordinates.push_back({atom.x(), atom.y(), atom.z()});
+
+            atom.ptr_x = &coordinates.back()[0];
+            atom.ptr_y = &coordinates.back()[1];
+            atom.ptr_z = &coordinates.back()[2];
+        }
     }
 
     double Molecule::distance(unsigned long i, unsigned long j){
@@ -128,15 +148,15 @@ namespace molfunc{
          *      // mol.distance(0, 1) -> ~1.0
          ******************************************************************/
 
-        if (i >= n_atoms() ||j >= n_atoms()){
+        if (i >= n_atoms() ||j >= n_atoms() || coordinates.empty()){
             throw runtime_error("Invalid index: "+to_string(i)+" or "+ to_string(j)+
-                                "must be present in the molecule");
+                                " must be present in the molecule");
         }
 
         double sq_dist = 0.0;
 
         for (int k=0; k<3; k++){
-            double tmp = atoms[i].coord[k] - atoms[j].coord[k];
+            double tmp = coordinates[i][k] - coordinates[j][k];
             sq_dist += tmp * tmp;
         }
 
@@ -243,10 +263,22 @@ namespace molfunc{
         } // i
     }
 
-    unsigned long Molecule::n_atoms() {
+    unsigned long Molecule::n_atoms() const {
         // Number of atoms in this molecule
         return atoms.size();
     }
+
+    unsigned long Molecule::n_masked_atoms(){
+        // Number of masked atoms in this system
+
+        unsigned long n_atoms = 0;
+        for (auto &atom : atoms){
+            if (atom.masked) n_atoms++;
+        }
+        return n_atoms;
+    }
+
+    unsigned long Molecule::n_unmasked_atoms() {return n_atoms() - n_masked_atoms();}
 
     void Molecule::print_xyz_file(const string& filename){
         /*********************************************************
@@ -256,20 +288,31 @@ namespace molfunc{
          *      filename (str):
          ********************************************************/
 
+        if (atoms.empty()){
+            throw runtime_error("Could not print a .xyz file- had no atoms");
+        }
+
         ofstream xyz_file (filename);
 
         if (xyz_file.is_open()){
 
             xyz_file << fixed;
             xyz_file << setprecision(6);
-            xyz_file << to_string(n_atoms()) << '\n' << "molfunc generated" << '\n';
 
-            for (auto atom: atoms){
+            // ---------------------------------------------------
+            xyz_file << to_string(n_unmasked_atoms()) << '\n'
+                     << "molfunc generated" << '\n';
+
+            for (auto &atom: atoms){
+
+                if (atom.masked) continue;  // Skip masked atoms
+
                 xyz_file << atom.symbol   << "    "
-                         << atom.coord[0] << "    "
-                         << atom.coord[1] << "    "
-                         << atom.coord[2] << "    " <<  '\n';
+                         << atom.x() << "    "
+                         << atom.y() << "    "
+                         << atom.z() << "    " <<  '\n';
             }
+            // ---------------------------------------------------
 
             xyz_file.close();
         }
@@ -277,5 +320,52 @@ namespace molfunc{
         else throw runtime_error("Cannot open "+filename);
     }
 
+    CoreMolecule::CoreMolecule(const string &xyz_filename):
+                              Molecule(xyz_filename){
+        /*********************************************************
+         * Construct a CoreMolecule from a standard .xyz file that
+         * contains one or more "R" dummy atoms that will be
+         * replaced by a fragment(s)
+         *
+         * Arguments:
+         *      xyz_filename (string):
+         ********************************************************/
+         if (n_atoms() == n_unmasked_atoms()){
+             throw runtime_error("Cannot construct a CoreMolecule with no "
+                                 "dummy (R) atoms present in the xyz file");
+         }
+
+    }
+
+    CoreMolecule::CoreMolecule(const string &xyz_filename,
+                               const vector<unsigned int>& atoms_to_del)
+                               : Molecule(xyz_filename) {
+        /*********************************************************
+         * Construct a CoreMolecule from a standard .xyz file and a
+         * number of atoms to delete, which will be replaced by
+         * fragments.
+         *
+         * Arguments:
+         *      xyz_filename (string):
+         *
+         *      atoms_to_del (list(int)): Atom indexes
+         *                                (indexed from 0)
+         ********************************************************/
+
+        for (auto atom_idx : atoms_to_del){
+
+            if (atom_idx >= n_atoms()){
+                throw out_of_range("Cannot delete atom " + to_string(atom_idx) +
+                                   " . Not present in " + xyz_filename);
+            }
+
+            if (graph.n_neighbours(atom_idx) != 1){
+                throw runtime_error("Deleted atoms must be monovalent. Atom "+
+                                    to_string(atom_idx)+" was not.");
+            }
+
+            atoms[atom_idx].masked = true;
+        }
+    }
 }
 
