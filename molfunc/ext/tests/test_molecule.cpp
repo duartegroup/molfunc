@@ -94,8 +94,9 @@ TEST_CASE("Test a graph is constructed for a molecule"){
 
 TEST_CASE("Test bond definitions"){
 
-    Molecule mol = Molecule({Atom("Os", 0.0, 0.0, 0.0),
-                             Atom("Sn", 2.5, 0.0, 0.0)});
+    vector<Atom> atoms = {Atom("Os", 0.0, 0.0, 0.0),
+                          Atom("Sn", 2.5, 0.0, 0.0)};
+    Molecule mol = Molecule(atoms);
 
     // The twp atoms are bonded
     REQUIRE(mol.graph.n_neighbours(0) == 1);
