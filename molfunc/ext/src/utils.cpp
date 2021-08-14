@@ -72,21 +72,13 @@ namespace molfunc{
         return utils::is_close(a, b, 1E-8);
     }
 
-    bool utils::is_close(vector<double> a, vector<double> b){
-
-        if (a.size() != b.size()){
-            throw runtime_error("Size of the two vectors not identical, "
-                                "therefore not the same!");
+    string utils::to_lower(string s){
+        // In-place lower case a string
+        for (auto &c : s){
+            c = tolower(c);
         }
 
-        // Ensure all elements are close
-        for (int i=0; i<a.size(); i++){
-            if (!is_close(a[i], b[i])){
-                return false;
-            }
-        }
-
-        return true;
+        return s;
     }
 
 }

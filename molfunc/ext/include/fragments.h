@@ -18,14 +18,11 @@ namespace molfunc{
             // Constructors
             Fragment();
             explicit Fragment(const string& xyz_filename);
-            Fragment(const vector<Atom>& atoms,
-                     const string& title);
+
     };
 
 
-    class FragmentLib{
-        // Singleton implementation from:
-        // (https://stackoverflow.com/questions/86582/singleton-how-should-it-be-used)
+    class FragmentLib{   // Singleton
 
         private:
             FragmentLib();
@@ -42,6 +39,8 @@ namespace molfunc{
                 static FragmentLib instance;
                 return instance;
             }
+
+            Fragment fragment(const string& name);
     };
 
 

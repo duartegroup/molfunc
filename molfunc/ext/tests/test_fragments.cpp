@@ -30,6 +30,19 @@ Fragment br_fragment(){
 }
 
 
+void print_br_xyz(){
+    ofstream xyz_file ("br.xyz");
+    if (xyz_file.is_open()){
+        xyz_file << "1\n"
+                    "\n"
+                    "Br          0.0       0.0        0.0\n";
+        xyz_file.close();
+    }
+    else throw runtime_error("Unable to open br.xyz");
+}
+
+
+
 TEST_CASE("Test fragment initialisation with aliases"){
 
     Fragment br = br_fragment();
@@ -42,6 +55,24 @@ TEST_CASE("Test fragment initialisation with aliases"){
 
 TEST_CASE("Test fragment library construction"){
 
-    REQUIRE(FragmentLib::instance().fragments.size() > 0);
+    REQUIRE_FALSE(FragmentLib::instance().fragments.empty());
 
+}
+
+
+TEST_CASE("Test retrieval from fragment library"){
+
+    auto frag = FragmentLib::instance().fragment("Br");
+
+    REQUIRE(frag.n_atoms() == 2);  // Br and R atom
+
+    REQUIRE_THROWS(FragmentLib::instance().fragment("Non-existing-frag"));
+}
+
+
+TEST_CASE("Test fragment constructor throws with no dummy atoms"){
+
+    print_br_xyz();
+    REQUIRE_THROWS(Fragment("br.xyz"));
+    remove("br.xyz");
 }

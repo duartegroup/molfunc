@@ -1,8 +1,7 @@
 #include <iostream>
+#include <algorithm>
 #include "fragments.h"
 #include "utils.h"
-
-#include "iostream"
 
 
 using namespace std;
@@ -38,25 +37,10 @@ namespace molfunc{
             // Assume aliases are second item in the space separated list
             aliases = utils::split(smiles_aliases[1], ',');
         }
-    }
 
-    Fragment::Fragment(const vector<Atom>& atoms,
-                       const string& title):Molecule(atoms) {
-        /*********************************************************
-         * Construct a Fragment molecule from a set of atoms
-         *
-         * Arguments:
-         *      atoms (list(Atom)):
-         *
-         *      title (string): e.g. [*]C(C)=O acetyl,come,coch3,ac
-         ********************************************************/
-
-        // Populate the name aliases of this fragment
-        vector<string> smiles_aliases = utils::split(title, ' ');
-
-        if (smiles_aliases.size() == 2){
-            // Assume aliases are second item in the space separated list
-            aliases = utils::split(smiles_aliases[1], ',');
+        if (n_masked_atoms() != 1){
+            throw runtime_error("Cannot construct a fragment molecule with "
+                                "no or more than one dummy (R) atom");
         }
     }
 
@@ -100,6 +84,32 @@ namespace molfunc{
                      Fragment(dir_path+"/data/Tf.xyz"),
                      Fragment(dir_path+"/data/TMS.xyz")
         };
+    }
+
+    Fragment FragmentLib::fragment(const string& name){
+        /*********************************************************
+         * Get a fragment from the library given a name, which must
+         * match one of the aliases of the fragment
+         *
+         * Arguments:
+         *      name (str):
+         *
+         * Raises:
+         *      (domain_error):
+         ********************************************************/
+        string l_name = utils::to_lower(name);
+
+        for (auto &fragment : fragments){
+            for (auto &alias : fragment.aliases){
+
+                if (alias == l_name){
+                    return fragment;
+                }
+            }// aliases
+        }// fragments
+
+        throw domain_error("Failed to find a fragment with an alias "+
+                           name+" in the library");
     }
 
 }

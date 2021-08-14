@@ -10,9 +10,7 @@ using namespace std;
 using namespace molfunc;
 
 
-Molecule methane_molecule(){
-    // Generate a reasonable methane molecule
-
+void print_methane_xyz(){
     ofstream xyz_file ("methane.xyz");
     if (xyz_file.is_open()){
         xyz_file << "5\n"
@@ -25,7 +23,13 @@ Molecule methane_molecule(){
         xyz_file.close();
     }
     else throw runtime_error("Unable to open methane.xyz");
+}
 
+
+Molecule methane_molecule(){
+    // Generate a reasonable methane molecule
+
+    print_methane_xyz();
     Molecule methane = Molecule("methane.xyz");
     remove("methane.xyz");
 
@@ -36,6 +40,10 @@ Molecule methane_molecule(){
 TEST_CASE("Test a molecule can be constructed from a xyz file"){
 
     Molecule methane = methane_molecule();
+
+    //for (auto atom : methane.atoms){
+    //    cout << atom.x() << '\t' << atom.y()  << '\t'<< atom.z() << endl;
+    //}
 
     REQUIRE(methane.n_atoms() == 5);
     REQUIRE(utils::is_close(methane.distance(0, 1),
@@ -54,6 +62,7 @@ TEST_CASE("Test a molecule can be constructed from a xyz file"){
 TEST_CASE("Test throws if xyz file does not exist"){
     REQUIRE_THROWS(Molecule("x.xyz"));
 }
+
 
 TEST_CASE("Test throws if not an .xyz file"){
 
@@ -85,12 +94,43 @@ TEST_CASE("Test a graph is constructed for a molecule"){
 
 TEST_CASE("Test bond definitions"){
 
-    Molecule mol = Molecule();
-    mol.atoms.push_back(Atom("Os", 0.0, 0.0, 0.0));
-    mol.atoms.push_back(Atom("Sn", 2.5, 0.0, 0.0));
-    mol.construct_graph();
+    Molecule mol = Molecule({Atom("Os", 0.0, 0.0, 0.0),
+                             Atom("Sn", 2.5, 0.0, 0.0)});
 
     // The twp atoms are bonded
     REQUIRE(mol.graph.n_neighbours(0) == 1);
 
 }
+
+
+TEST_CASE("Test throws on printing an xyz file with no atoms"){
+    Molecule mol = Molecule();
+
+    REQUIRE_THROWS(mol.print_xyz_file("tmp.xyz"));
+}
+
+
+TEST_CASE("Test core molecule construction"){
+
+    print_methane_xyz();
+    CoreMolecule mol = CoreMolecule("methane.xyz",
+                                    {1});
+    REQUIRE(mol.n_atoms() == 5);
+
+    // Deleting atom 1 (a hydrogen) will mask it
+    REQUIRE(mol.n_unmasked_atoms() == 4);
+
+    // Cannot construct a core molecule where the deleted atom(s) is(are) not
+    // monovalent
+    REQUIRE_THROWS(CoreMolecule("methane.xyz", {0}));
+
+    // nor if the deleted atom is out of range
+    REQUIRE_THROWS(CoreMolecule("methane.xyz", {5}));
+
+    // nor if the .xyz file doesn't contain any dummy atoms and no atoms_to_del
+    // are specified
+    REQUIRE_THROWS(CoreMolecule("methane.xyz"));
+
+    remove("methane.xyz");
+}
+
