@@ -18,6 +18,14 @@ namespace molfunc{
             unsigned long n_masked_atoms();
             unsigned long n_unmasked_atoms();
 
+            double distance(unsigned long i, unsigned long j);
+
+            void translate(array<double, 3> vec);
+
+            array<double, 3> n_vector(unsigned long i, unsigned long j);
+
+            vector<unsigned long> masked_atom_idxs();
+
             void print_xyz_file(const string& filename);
 
     };

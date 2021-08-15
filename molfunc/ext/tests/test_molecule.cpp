@@ -124,6 +124,8 @@ TEST_CASE("Test core molecule construction"){
 
     // Deleting atom 1 (a hydrogen) will mask it
     REQUIRE(mol.n_unmasked_atoms() == 4);
+    REQUIRE(mol.masked_atom_idxs().size() == 1);
+    REQUIRE(mol.masked_atom_idxs()[0] == 1);
 
     // Cannot construct a core molecule where the deleted atom(s) is(are) not
     // monovalent

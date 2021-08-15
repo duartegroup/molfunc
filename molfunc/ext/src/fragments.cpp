@@ -24,7 +24,14 @@ namespace molfunc{
          *
          *  where the title line contains the SMILES string and
          *  a set of name aliases of the fragment. R is the atom
-         *  that will be deleted in favour of the core molecule
+         *  that will be deleted in favour of the core molecule.
+         *
+         *                 O
+         *               //
+         *          R---C -- Me
+         *
+         *  Here the index of the dummy (R) atom is 0 and have
+         *  aliases acetyl,come,coch3,ac
          *
          * Arguments:
          *      xyz_filename (string):
@@ -42,11 +49,14 @@ namespace molfunc{
             throw runtime_error("Cannot construct a fragment molecule with "
                                 "no or more than one dummy (R) atom");
         }
+
+        this->dummy_idx = masked_atom_idxs()[0];
     }
 
     Fragment::Fragment(const Fragment &fragment) : Molecule(fragment) {
         // Copy constructor
         this->aliases = fragment.aliases;
+        this->dummy_idx = fragment.dummy_idx;
     }
 
     FragmentLib::FragmentLib() {

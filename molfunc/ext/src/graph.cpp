@@ -113,6 +113,32 @@ namespace molfunc{
         return edges.size();
     }
 
+    unsigned long Graph::first_neighbour(unsigned long u){
+        /*********************************************************
+         * First of neighbours for a particular atom index (node)
+         *
+         * Arguments:
+         *      u (int): Atom index
+         *
+         *  Raises:
+         *      (runtime_error): If either u is not present or
+         *                       there is <1 neighbour
+         *
+         *  Returns:
+         *      (int):
+         ********************************************************/
+        if (nodes.find(u) == nodes.end()){
+            throw runtime_error("Node "+to_string(u)+" not present");
+        }
+
+        if (nodes[u].neighbours.empty()){
+            throw out_of_range("Node "+to_string(u)+" did not have any "
+                               "neighbours, thus no first neighbour");
+        }
+
+        return nodes[u].neighbours[0];
+    }
+
     unsigned long Graph::n_neighbours(unsigned long u){
         /*********************************************************
          * Number of neighbours for a particular atom index (node)

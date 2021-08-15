@@ -8,15 +8,23 @@ namespace molfunc{
 
     class CombinedMolecule {
 
-    public:
-        CoreMolecule core;
-        vector<Fragment> fragments;
+        public:
 
-        CombinedMolecule();
-        CombinedMolecule(CoreMolecule &core,
-                         vector<Fragment> &fragments);
+            CoreMolecule core;
+            vector<Fragment> fragments;
 
-        void build();
+            CombinedMolecule();
+            CombinedMolecule(CoreMolecule &core,
+                             vector<Fragment> &fragments);
+
+            void build();
+
+            Molecule to_molecule();
+
+
+        protected:
+            void translate_fragment(Fragment &fragment,
+                                    unsigned long dummy_atom_idx);
     };
 
 }

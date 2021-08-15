@@ -14,6 +14,7 @@ namespace molfunc{
 
         public:
             vector<string> aliases;
+            unsigned long dummy_idx = 0;
 
             // Constructors
             Fragment();

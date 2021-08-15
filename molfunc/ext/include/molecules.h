@@ -23,13 +23,9 @@ namespace molfunc{
             explicit Molecule(const string& xyz_filename);
             explicit Molecule(const vector<Atom>& atoms);
 
-            double distance(unsigned long i, unsigned long j);
-
             void construct_graph();
 
             void assign_coordinates();
-
-            void translate(array<double, 3> vec);
 
         protected:
             string xyz_title_line;
@@ -44,10 +40,8 @@ namespace molfunc{
 
         public:
             CoreMolecule();
-
             CoreMolecule(const string& xyz_filename,
                          const vector<unsigned int>& atoms_to_del);
-
             explicit CoreMolecule(const string& xyz_filename);
 
     };

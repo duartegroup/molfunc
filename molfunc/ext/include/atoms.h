@@ -37,6 +37,8 @@ namespace molfunc{
             double x();
             double y();
             double z();
+
+            double covalent_radius() const;
     };
 
 }

@@ -22,6 +22,10 @@ TEST_CASE("Test a graph can be constructed from nodes and edges"){
     REQUIRE(graph.n_neighbours(0) == 1);
     REQUIRE(graph.n_neighbours(1) == 1);
 
+    // Check first neighbours
+    REQUIRE(graph.first_neighbour(0) == 1);
+    REQUIRE(graph.first_neighbour(1) == 0);
+
 }
 
 
