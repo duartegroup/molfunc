@@ -11,7 +11,7 @@ namespace molfunc{
         public:
             Species();
 
-            vector<array<double, 3>> coordinates;
+            vector<Coordinate> coordinates;
             vector<Atom> atoms;
 
             unsigned long n_atoms() const;

@@ -33,11 +33,10 @@ namespace molfunc{
         }
 
         set_atoms(xyz_filename);
-        assign_coordinates();
         construct_graph();
     }
 
-    Molecule::Molecule(const vector<Atom>& atoms){
+    Molecule::Molecule(vector<Atom3D>& atoms){
         /*********************************************************
          * Construct a Molecule from a set of atoms
          *
@@ -50,8 +49,13 @@ namespace molfunc{
          *      // mol.n_atoms() -> 1
          ********************************************************/
 
-        this->atoms = atoms;
-        assign_coordinates();
+        this->atoms = {};
+
+        for (auto &atom3d : atoms){
+            this->coordinates.push_back({atom3d.x(), atom3d.y(), atom3d.z()});
+            this->atoms.emplace_back(atom3d.symbol);
+        }
+
         construct_graph();
     }
 
@@ -98,11 +102,10 @@ namespace molfunc{
                 throw runtime_error("Malformatted xyz file line: " + line);
             }
 
-            atoms.emplace_back(xyz_items[0],         // Atomic symbol
-                               stod(xyz_items[1]),   // x
-                               stod(xyz_items[2]),   // y
-                               stod(xyz_items[3]));  // z
-
+            atoms.emplace_back(xyz_items[0]);         // Atomic symbol
+            coordinates.push_back({stod(xyz_items[1]),   // x
+                                  stod(xyz_items[2]),    // y
+                                  stod(xyz_items[3])});  // z
         }
         xyz_file.close();
 
@@ -113,22 +116,6 @@ namespace molfunc{
         }
 
 
-    }
-
-    void Molecule::assign_coordinates(){
-        /*******************************************************************
-         * Assign the coordinates for this molecule in a memory-contiguous
-         * way
-         ******************************************************************/
-        coordinates.reserve(n_atoms());
-
-        for (auto &atom : atoms){
-            coordinates.push_back({atom.x(), atom.y(), atom.z()});
-
-            atom.ptr_x = &coordinates.back()[0];
-            atom.ptr_y = &coordinates.back()[1];
-            atom.ptr_z = &coordinates.back()[2];
-        }
     }
 
     bool Molecule::is_bonded_on_distance(unsigned long i, unsigned long j) {

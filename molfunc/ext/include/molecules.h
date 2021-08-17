@@ -21,11 +21,9 @@ namespace molfunc{
 
             Molecule();
             explicit Molecule(const string& xyz_filename);
-            explicit Molecule(const vector<Atom>& atoms);
+            explicit Molecule(vector<Atom3D>& atom);
 
             void construct_graph();
-
-            void assign_coordinates();
 
         protected:
             string xyz_title_line;

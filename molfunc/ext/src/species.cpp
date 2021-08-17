@@ -124,14 +124,14 @@ namespace molfunc{
             xyz_file << to_string(n_unmasked_atoms()) << '\n'
             << "molfunc generated" << '\n';
 
-            for (auto &atom: atoms){
+            for (int i=0; i<n_atoms(); i++){
 
-                if (atom.masked) continue;  // Skip masked atoms
+                if (atoms[i].masked) continue;  // Skip masked atoms
 
-                xyz_file << atom.symbol   << "    "
-                << atom.x() << "    "
-                << atom.y() << "    "
-                << atom.z() << "    " <<  '\n';
+                xyz_file << atoms[i].symbol   << "    "
+                << coordinates[i].x() << "    "
+                << coordinates[i].y() << "    "
+                << coordinates[i].z() << "    " <<  '\n';
             }
             // ---------------------------------------------------
 

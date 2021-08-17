@@ -9,36 +9,44 @@ using namespace std;
 
 namespace molfunc{
 
-    class Atom {
-
-        private:
-            array<double, 3> coord = {0.0, 0.0, 0.0};
+    class Coordinate: public array<double, 3>{
 
         public:
-            string symbol = "X";
-
-            bool masked = false;
-
-            void translate(array<double, 3> &vec);
-
-            [[nodiscard]] unsigned int atomic_number() const;
-            [[nodiscard]] bool is_dummy() const;
-
-            explicit Atom();
-            explicit Atom(const string& symbol,
-                          double x,
-                          double y,
-                          double z);
-
-            double* ptr_x = nullptr;
-            double* ptr_y = nullptr;
-            double* ptr_z = nullptr;
 
             double x();
             double y();
             double z();
 
+    };
+
+
+    class Atom {
+
+        public:
+            string symbol = "X";
+            bool masked = false;
+
+            unsigned int atomic_number() const;
+            bool is_dummy() const;
+
+            explicit Atom();
+            explicit Atom(const string& symbol);
+
             double covalent_radius() const;
+    };
+
+    class Atom3D: public Atom{
+
+        private:
+            Coordinate coord = {0.0, 0.0, 0.0};
+
+        public:
+            Atom3D(const string& symbol, double x, double y, double z);
+            Atom3D(const string& symbol,  Coordinate &coord);
+
+            double x();
+            double y();
+            double z();
     };
 
 }

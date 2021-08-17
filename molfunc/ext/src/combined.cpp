@@ -119,14 +119,25 @@ namespace molfunc{
 
     Molecule CombinedMolecule::to_molecule() {
         // Construct a standard molecule from this combined molecule
-        vector<Atom> atoms;
-        for (auto atom : core.atoms){
-            if (!atom.masked) atoms.push_back(atom);
+        vector<Atom3D> atoms;
+
+        for (int i=0; i<core.n_atoms(); i++){
+
+            auto atom = core.atoms[i];
+
+            if (!atom.masked){
+                atoms.emplace_back(atom.symbol, core.coordinates[i]);
+            }
         }
 
         for (auto &fragment : fragments){
-            for (auto atom : fragment.atoms){
-                if (!atom.masked) atoms.push_back(atom);
+            for (int i=0; i<fragment.n_atoms(); i++){
+
+                auto atom = fragment.atoms[i];
+
+                if (!atom.masked){
+                    atoms.emplace_back(atom.symbol, fragment.coordinates[i]);
+                }
             }
         }
 

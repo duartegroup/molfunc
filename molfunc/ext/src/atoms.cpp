@@ -12,39 +12,19 @@ namespace molfunc{
     // Default constructors are required for Cython wrapping
     Atom::Atom() = default;
 
-    Atom::Atom(const string& symbol, double x, double y, double z) {
+    Atom::Atom(const string& symbol) {
         /*********************************************************
          * Construct an atom from an atomic symbol and its position
          * in 3D space
          *
          * Arguments:
          *      symbol (string): Atomic symbol
-         *      x (float):       Cartesian x coordinate (Å)
-         *      y (float):                 y coordinate (Å)
-         *      z (float):                 z coordinate (Å)
          ********************************************************/
 
         this->symbol = symbol;
-        this->coord = {x, y, z};
 
         if (symbol == "R") masked = true;
 
-    }
-
-    void Atom::translate(array<double, 3> &vec){
-        /*********************************************************
-         * Translate an atom by a 3-component vector (Å)
-         *
-         * Arguments:
-         *      vec (vector): Shift vector in 3D space
-         *
-         *  Raises:
-         *      (runtime_error):
-         ********************************************************/
-
-        for (int i=0; i<3; i++){
-            coord[i] += vec[i];
-        }
     }
 
     unsigned int Atom::atomic_number() const{
@@ -84,21 +64,6 @@ namespace molfunc{
 
     bool Atom::is_dummy() const{return (symbol == "R");}
 
-    double Atom::x(){
-        if (ptr_x != nullptr) coord[0] = *ptr_x;
-        return coord[0];
-    }
-
-    double Atom::y(){
-        if (ptr_y != nullptr) coord[1] = *ptr_y;
-        return coord[1];
-    }
-
-    double Atom::z(){
-        if (ptr_z != nullptr) coord[2] = *ptr_z;
-        return coord[2];
-    }
-
     double Atom::covalent_radius() const{
         /*********************************************************
          * Determine the covalent radius of this atom
@@ -127,4 +92,45 @@ namespace molfunc{
 
         return radii[atomic_number()];
     }
+
+    Atom3D::Atom3D(const string& symbol,  double x, double y, double z){
+        /*********************************************************
+         * Construct an atom from an atomic symbol and its position
+         * in 3D space
+         *
+         * Arguments:
+         *      symbol (string): Atomic symbol
+         *      x (float):       Cartesian x coordinate (Å)
+         *      y (float):                 y coordinate (Å)
+         *      z (float):                 z coordinate (Å)
+         ********************************************************/
+        this->symbol = symbol;
+        this->coord = {x, y, z};
+    }
+
+    Atom3D::Atom3D(const string& symbol,  Coordinate &coord){
+        /*********************************************************
+         * Construct an atom from an atomic symbol and its position
+         * in 3D space
+         *
+         * Arguments:
+         *      symbol (string): Atomic symbol
+         *      coord (float):       Cartesian x, y, z coordinates (Å)
+         ********************************************************/
+        this->symbol = symbol;
+        this->coord = coord;
+    }
+
+    double Atom3D::x() {return coord[0];}
+
+    double Atom3D::y() {return coord[1];}
+
+    double Atom3D::z() {return coord[2];}
+
+    double Coordinate::x() {return __elems_[0];}
+
+    double Coordinate::y() {return __elems_[1];}
+
+    double Coordinate::z() {return __elems_[2];}
+
 }
