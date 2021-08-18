@@ -66,3 +66,24 @@ TEST_CASE("Test simple H3CBr combined construction") {
 
     REQUIRE((mol.distance(0, 4) > 1.5 && mol.distance(0, 4) < 2.5));
 }
+
+
+TEST_CASE("Test simple repulsive energy"){
+
+    auto mol = CombinedMolecule(core_mol(),
+                                {FragmentLib::instance().fragment("Br")});
+
+    // Built molecule should have a lower repulsion than a close translation
+    // of the fragment
+    double rep_e = mol.repulsive_energy();
+
+    mol.fragments[0].translate({-0.1, 0.0, 0.0});
+
+    REQUIRE(rep_e < mol.repulsive_energy());
+    rep_e = mol.repulsive_energy();
+
+    // and if it's translated even closer
+    mol.fragments[0].translate({-0.3, 0.0, 0.0});
+    REQUIRE(rep_e < mol.repulsive_energy());
+
+}

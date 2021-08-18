@@ -14,9 +14,11 @@ namespace molfunc{
             vector<Fragment> fragments;
 
             CombinedMolecule();
-            CombinedMolecule(CoreMolecule &core,
-                             vector<Fragment> &fragments);
+            CombinedMolecule(CoreMolecule core,
+                             vector<Fragment> fragments);
 
+            double repulsive_energy();
+            double repulsive_energy(const Fragment& fragment);
             void build();
 
             Molecule to_molecule();

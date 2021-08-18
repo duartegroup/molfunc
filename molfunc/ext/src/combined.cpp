@@ -1,6 +1,7 @@
 #include "vector"
 #include "stdexcept"
 #include "combined.h"
+#include "iostream"
 
 using namespace std;
 
@@ -9,8 +10,8 @@ namespace molfunc{
 
     CombinedMolecule::CombinedMolecule() = default;
 
-    CombinedMolecule::CombinedMolecule(CoreMolecule &core,
-                                       vector<Fragment> &fragments) {
+    CombinedMolecule::CombinedMolecule(CoreMolecule core,
+                                       vector<Fragment> fragments) {
         /*********************************************
          * Generate a combined molecule from a core
          * and a number of fragments
@@ -22,10 +23,10 @@ namespace molfunc{
          *                                  in place
          ********************************************/
 
-        this->core = core;
-        this->fragments = fragments;
+        this->core = move(core);
+        this->fragments = move(fragments);
 
-        if (!fragments.empty()){
+        if (!this->fragments.empty()){
             build();
         }
     }
@@ -142,6 +143,67 @@ namespace molfunc{
         }
 
         return Molecule(atoms);
+    }
+
+    double CombinedMolecule::repulsive_energy() {
+        /*********************************************************
+         * Calculate the repulsive energy between the fragments
+         * and the core
+         *
+         *      E = Σ_fragments Σ_ij 1/(r_ij^4)
+         *
+         * for all unique pairs where i enumerates atoms in the
+         * core and j atoms in the specific fragment.
+         *
+         * Returns:
+         *      E (float): Repulsive energy
+         ********************************************************/
+
+        double energy = 0.0;
+
+        for (int i=0; i<core.n_atoms(); i++){
+
+            // Skip masked atoms
+            if (core.atoms[i].masked) continue;
+
+            for (const auto &fragment : fragments){
+                for (int j=0; j<fragment.n_atoms(); j++){
+
+                    if (fragment.atoms[j].masked) continue;
+
+                    // inline r^2 evaluation for speed(?)
+                    double r_sq = 0.0;
+                    for (int k=0; k<3; k++){
+                        double tmp = (core.coordinates[i][k]
+                                      - fragment.coordinates[j][k]);
+                        r_sq += tmp * tmp;
+                    }
+
+                    energy += 1.0 / (r_sq * r_sq);
+
+                }// fragment coordinates
+            }// fragments
+        }// core coordinates
+
+        return energy;
+    }
+
+    double CombinedMolecule::repulsive_energy(const Fragment& fragment) {
+        /*********************************************************
+         * Calculate the repulsive energy between the core and a
+         * single fragment
+         *
+         *      E =  Σ_ij 1/r_ij
+         *
+         * for all unique pairs where i enumerates atoms in the
+         * core and j atoms in the fragment.
+         *
+         * Returns:
+         *      E (float): Repulsive energy
+         ********************************************************/
+
+
+        return 0;
     }
 
 }

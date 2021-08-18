@@ -12,7 +12,7 @@ add_library(molfunc STATIC
             include/fragments.h src/fragments.cpp
             include/combined.h src/combined.cpp
             include/species.h src/species.cpp
-            include/rotation.h include/rotation.cpp)
+            include/rotation.h src/rotation.cpp)
 
 find_package(Catch2 REQUIRED)
 
@@ -24,7 +24,8 @@ add_executable(test
                tests/test_graphs.cpp
                tests/test_fragments.cpp
                tests/test_utils.cpp
-               tests/test_combination.cpp tests/test_rotation.cpp)
+               tests/test_combination.cpp
+               tests/test_rotation.cpp)
 
 target_link_libraries(test PRIVATE Catch2::Catch2)
 target_link_libraries(test PUBLIC molfunc)
