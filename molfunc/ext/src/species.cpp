@@ -141,5 +141,25 @@ namespace molfunc{
         else throw runtime_error("Cannot open "+filename);
     }
 
+    void Species::rotate(const RotationMatrix &R) {
+        /*********************************************************
+         * Rotate this species using a rotation matrix
+         *
+         * Arguments:
+         *      R (RotationMatrix): (3x3) Matrix that applies the
+         *                          rotation
+         ********************************************************/
+
+        for (auto &coord : coordinates){
+            double x = coord[0];
+            double y = coord[1];
+            double z = coord[2];
+
+            coord[0] = R[0][0] * x + R[0][1] * y + R[0][2] * z;
+            coord[1] = R[1][0] * x + R[1][1] * y + R[1][2] * z;
+            coord[2] = R[2][0] * x + R[2][1] * y + R[2][2] * z;
+        }
+    }
+
 }
 

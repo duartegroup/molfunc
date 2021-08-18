@@ -2,6 +2,7 @@
 #define MOLFUNC_EXT_SPECIES_H
 #include "vector"
 #include "atoms.h"
+#include "rotation.h"
 
 
 namespace molfunc{
@@ -21,6 +22,8 @@ namespace molfunc{
             double distance(unsigned long i, unsigned long j);
 
             void translate(array<double, 3> vec);
+
+            void rotate(const RotationMatrix &R);
 
             array<double, 3> n_vector(unsigned long i, unsigned long j);
 

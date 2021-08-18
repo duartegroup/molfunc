@@ -153,9 +153,7 @@ TEST_CASE("Test molecule translation"){
 
     // Translating by the negative of the Origin-C vecotr should
     // leave the carbon at (0, 0, 0) i.e. the origin
-    REQUIRE(utils::is_close(regen_methane.coordinates[0][0], 0.0));
-    REQUIRE(utils::is_close(regen_methane.coordinates[0][1], 0.0));
-    REQUIRE(utils::is_close(regen_methane.coordinates[0][2], 0.0));
+    REQUIRE(utils::is_close(regen_methane.coordinates[0], { 0, 0, 0 }));
 
     remove("tmp.xyz");
 }

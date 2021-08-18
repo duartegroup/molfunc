@@ -62,7 +62,6 @@ namespace molfunc{
         return (0 == s.compare(s.length() - ending.length(), ending.length(), ending));
     }
 
-
     bool utils::is_close(double a, double b, double tol){
         return abs(a - b) < tol;
     }
@@ -72,9 +71,18 @@ namespace molfunc{
         return utils::is_close(a, b, 1E-8);
     }
 
+    bool utils::is_close(Coordinate a, Coordinate b) {
+
+        for (int i=0; i<3; i++){
+            if (!is_close(a[i], b[i])) return false;
+        }
+
+        return true;
+    }
+
     string utils::to_lower(string s){
         // In-place lower case a string
-        for (auto &c : s){
+        for (char &c : s){
             c = tolower(c);
         }
 

@@ -2,6 +2,7 @@
 #define MOLFUNC_EXT_UTILS_H
 #include <string>
 #include "vector"
+#include "atoms.h"
 
 
 using namespace std;
@@ -14,6 +15,7 @@ namespace molfunc::utils{
 
         bool is_close(double a, double b);
         bool is_close(double a, double b, double tol);
+        bool is_close(Coordinate a, Coordinate b);
 
         string to_lower(string s);
 }
