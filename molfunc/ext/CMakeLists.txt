@@ -26,7 +26,7 @@ add_executable(test
                tests/test_fragments.cpp
                tests/test_utils.cpp
                tests/test_combination.cpp
-               tests/test_rotation.cpp)
+               tests/test_rotation.cpp tests/test_grid.cpp)
 
 target_link_libraries(test PRIVATE Catch2::Catch2)
 target_link_libraries(test PUBLIC molfunc)

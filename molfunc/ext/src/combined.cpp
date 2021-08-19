@@ -70,7 +70,7 @@ namespace molfunc{
             //prune_rotational_space(fragments[i]);
         }
 
-        //rotate_fragments();
+        rotate_fragments();
 
     }
 
@@ -161,29 +161,9 @@ namespace molfunc{
 
         double energy = 0.0;
 
-        for (int i=0; i<core.n_atoms(); i++){
-
-            // Skip masked atoms
-            if (core.atoms[i].masked) continue;
-
-            for (const auto &fragment : fragments){
-                for (int j=0; j<fragment.n_atoms(); j++){
-
-                    if (fragment.atoms[j].masked) continue;
-
-                    // inline r^2 evaluation for speed(?)
-                    double r_sq = 0.0;
-                    for (int k=0; k<3; k++){
-                        double tmp = (core.coordinates[i][k]
-                                      - fragment.coordinates[j][k]);
-                        r_sq += tmp * tmp;
-                    }
-
-                    energy += 1.0 / (r_sq * r_sq);
-
-                }// fragment coordinates
-            }// fragments
-        }// core coordinates
+        for (const auto &fragment : fragments){
+            energy += repulsive_energy(fragment);
+        }
 
         return energy;
     }
@@ -202,10 +182,75 @@ namespace molfunc{
          *      E (float): Repulsive energy
          ********************************************************/
 
+        double energy = 0.0;
 
-        return 0;
+        for (int i=0; i<core.n_atoms(); i++){
+
+            // TODO: something that is contigious in memory
+            if (core.atoms[i].masked) continue;  // Skip masked atoms
+
+            for (int j=0; j<fragment.n_atoms(); j++){
+
+                if (fragment.atoms[j].masked) continue;
+
+                // inline r^2 evaluation for speed(?)
+                double r_sq = 0.0;
+                for (int k=0; k<3; k++){
+                    double tmp = (core.coordinates[i][k]
+                            - fragment.coordinates[j][k]);
+                    r_sq += tmp * tmp;
+                }
+
+                energy += 1.0 / (r_sq * r_sq);
+
+            }// fragment coordinates
+        }// core coordinates
+
+        return energy;
     }
 
+    void CombinedMolecule::exclude_rotational_space(Fragment &fragment,
+                                                    double threshold){
+        /*****************************************************
+         * Rotate a fragment to exclude rotational space
+         * based on fragment–core repulsion only
+         *
+         * Arguments:
+         *      fragment:
+         ****************************************************/
+
+        // Enumerate backwards through the vector, so that the indexing
+        // remains valid
+        auto it = fragment.rot_grid_w.rbegin();
+
+        while (it != fragment.rot_grid_w.rend()){
+
+            fragment.rotate()
+
+            if (repulsive_energy(fragment) > threshold){
+                fragment.rot_grid_w.erase(it);
+            }
+
+            it++;
+        }
+
+    }
+
+    void CombinedMolecule::rotate_fragments(){
+        /*****************************************************
+         * Rotate the fragments to minimise the total energy
+         * using the repulsion and ...
+         * TODO: angle potential
+         *
+         *
+         ****************************************************/
+
+        for (auto &fragment : fragments){
+            exclude_rotational_space(fragment);
+        }
+
+
+    }
 }
 
 

@@ -55,6 +55,7 @@ namespace molfunc{
 
     Fragment::Fragment(const Fragment &fragment) : Molecule(fragment) {
         // Copy constructor
+        this->rot_grid_w = fragment.rot_grid_w;
         this->aliases = fragment.aliases;
         this->dummy_idx = fragment.dummy_idx;
     }

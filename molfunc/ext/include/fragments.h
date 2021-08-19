@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "atoms.h"
+#include "grid.h"
 #include "molecules.h"
 
 
@@ -15,6 +16,7 @@ namespace molfunc{
         public:
             vector<string> aliases;
             unsigned long dummy_idx = 0;
+            Grid3D rot_grid_w = Grid3D(0.001, 3.14, 10);
 
             // Constructors
             Fragment();

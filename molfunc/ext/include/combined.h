@@ -25,12 +25,15 @@ namespace molfunc{
 
 
         protected:
+            void rotate_fragments();
+            void exclude_rotational_space(Fragment &fragment,
+                                          double threshold);
+
             void translate_fragment(Fragment &fragment,
                                     unsigned long dummy_atom_idx);
     };
 
 }
-
 
 
 #endif //MOLFUNC_EXT_COMBINED_H
