@@ -76,8 +76,8 @@ TEST_CASE("Test equal distro of rotations"){
 
     int num = 10;
     auto num_d = double(num);
-    double min_w = -100.0;
-    double max_w = 100.0;
+    double min_w = 0.01;
+    double max_w = 3.14;
 
     for (int i=0; i<num; i++){
         for (int j=0; j<num; j++){

@@ -12,7 +12,8 @@ add_library(molfunc STATIC
             include/fragments.h src/fragments.cpp
             include/combined.h src/combined.cpp
             include/species.h src/species.cpp
-            include/rotation.h src/rotation.cpp)
+            include/rotation.h src/rotation.cpp
+            include/grid.h src/grid.cpp )
 
 find_package(Catch2 REQUIRED)
 

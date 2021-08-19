@@ -127,10 +127,18 @@ namespace molfunc{
 
     double Atom3D::z() {return coord[2];}
 
-    double Coordinate::x() {return __elems_[0];}
+    double Coordinate::x() {return this->data()[0];}
 
-    double Coordinate::y() {return __elems_[1];}
+    double Coordinate::y() {return this->data()[1];}
 
-    double Coordinate::z() {return __elems_[2];}
+    double Coordinate::z() {return this->data()[2];}
+
+    std::ostream &operator<<(ostream &os, const Coordinate &coordinate) {
+        os << to_string(coordinate[0]) + " \t"
+              + to_string(coordinate[1]) + " \t"
+              + to_string(coordinate[2]) + " \t";
+
+        return os;
+    }
 
 }
