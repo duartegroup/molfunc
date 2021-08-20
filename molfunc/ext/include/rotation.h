@@ -11,6 +11,7 @@ namespace molfunc {
     public:
 
         void update(double w1, double w2, double w3);
+        void update(array<double, 3> &arr);
 
     };
 

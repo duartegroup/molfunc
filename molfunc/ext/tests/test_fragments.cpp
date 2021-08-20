@@ -1,4 +1,5 @@
 #include "fragments.h"
+#include "rotation.h"
 #include "utils.h"
 #include "stdexcept"
 #include <iostream>
@@ -92,4 +93,20 @@ TEST_CASE("Test multiple fragments from lib"){
     Fragment br_2 = FragmentLib::instance().fragment("Br");
 
     REQUIRE(utils::is_close(coord[0], br_2.coordinates[0][0]));
+}
+
+
+TEST_CASE("Test coordinate reset"){
+    auto fragment = br_fragment();
+
+    // Apply a random ish rotation to the fragment
+    auto rot_mat = RotationMatrix();
+    rot_mat.update(1.0, 0.1, 0.2);
+    fragment.rotate(rot_mat);
+
+    REQUIRE_FALSE(utils::is_close(fragment.coordinates[0].x(), 0.92450));
+
+    // Resetting the coordinates should return them to the original values
+    fragment.reset_coordinates();
+    REQUIRE(utils::is_close(fragment.coordinates[0].x(), 0.92450));
 }

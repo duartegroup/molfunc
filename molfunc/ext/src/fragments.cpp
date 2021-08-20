@@ -11,7 +11,7 @@ namespace molfunc{
 
     Fragment::Fragment() = default;
 
-    Fragment::Fragment(const string& xyz_filename):Molecule(xyz_filename) {
+    Fragment::Fragment(const string& xyz_filename): Molecule(xyz_filename) {
         /*********************************************************
          * Construct a Fragment molecule from a standard .xyz file,
          * which may be of the form:
@@ -51,13 +51,25 @@ namespace molfunc{
         }
 
         this->dummy_idx = masked_atom_idxs()[0];
+        this->cached_coordinates = vector<Coordinate>(coordinates);
     }
 
-    Fragment::Fragment(const Fragment &fragment) : Molecule(fragment) {
+    Fragment::Fragment(const Fragment &fragment): Molecule(fragment) {
         // Copy constructor
         this->rot_grid_w = fragment.rot_grid_w;
         this->aliases = fragment.aliases;
         this->dummy_idx = fragment.dummy_idx;
+        this->cached_coordinates = vector<Coordinate>(fragment.coordinates);
+    }
+
+    void Fragment::reset_coordinates(){
+        /************************************
+         * Reset the coordinates using the
+         * cached values
+         ***********************************/
+         for (int i=0; i<n_atoms(); i++){
+             coordinates[i] = cached_coordinates[i];
+         }
     }
 
     FragmentLib::FragmentLib() {

@@ -13,6 +13,9 @@ namespace molfunc{
 
     class Fragment: public Molecule{
 
+        protected:
+            vector<Coordinate> cached_coordinates;
+
         public:
             vector<string> aliases;
             unsigned long dummy_idx = 0;
@@ -22,6 +25,8 @@ namespace molfunc{
             Fragment();
             explicit Fragment(const string& xyz_filename);
             Fragment(const Fragment &fragment);
+
+            void reset_coordinates();
 
     };
 

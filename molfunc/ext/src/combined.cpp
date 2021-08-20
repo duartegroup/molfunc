@@ -219,21 +219,23 @@ namespace molfunc{
          *      fragment:
          ****************************************************/
 
+        auto rot_mat = RotationMatrix();
+        auto rot_grid = fragment.rot_grid_w;
+
         // Enumerate backwards through the vector, so that the indexing
         // remains valid
-        auto it = fragment.rot_grid_w.rbegin();
 
-        while (it != fragment.rot_grid_w.rend()){
+        for (int i=(rot_grid.size()-1); i>=0; i--){
 
-            fragment.rotate()
+            rot_mat.update(rot_grid[i]);
+            fragment.rotate(rot_mat);
 
             if (repulsive_energy(fragment) > threshold){
-                fragment.rot_grid_w.erase(it);
+                 rot_grid.erase(rot_grid.begin()+i);
             }
 
-            it++;
+            fragment.reset_coordinates();
         }
-
     }
 
     void CombinedMolecule::rotate_fragments(){
@@ -244,9 +246,10 @@ namespace molfunc{
          *
          *
          ****************************************************/
+        return;
 
         for (auto &fragment : fragments){
-            exclude_rotational_space(fragment);
+            exclude_rotational_space(fragment, 0.1);
         }
 
 

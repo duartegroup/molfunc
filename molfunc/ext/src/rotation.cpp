@@ -42,4 +42,8 @@ namespace molfunc{
         this->data()[2][1] = a * w1 + b * w2 * w3;
         this->data()[2][2] = 1 - b * (w1 * w1 + w2 * w2);
     }
+
+    void RotationMatrix::update(array<double, 3> &arr) {
+        update(arr[0], arr[1], arr[2]);
+    }
 }
