@@ -43,7 +43,7 @@ namespace molfunc{
         this->data()[2][2] = 1 - b * (w1 * w1 + w2 * w2);
     }
 
-    void RotationMatrix::update(array<double, 3> &arr) {
+    void RotationMatrix::update(GridPoint &arr) {
         update(arr[0], arr[1], arr[2]);
     }
 }

@@ -8,13 +8,22 @@ using namespace std;
 
 namespace molfunc{
 
-    class Grid3D: public vector<array<double, 3>>{
+    class GridPoint: public array<double, 3>{
+
+        public:
+            double energy = 0.0;
+
+    };
+
+    class Grid3D: public vector<GridPoint>{
 
         double min_value;
         double max_value;
 
         public:
             Grid3D(double min_value, double max_value, unsigned int num);
+
+            GridPoint minimum_energy_point();
 
     };
 }

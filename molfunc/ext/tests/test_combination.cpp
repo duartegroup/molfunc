@@ -70,8 +70,12 @@ TEST_CASE("Test simple H3CBr combined construction") {
 
 TEST_CASE("Test simple repulsive energy"){
 
-    auto mol = CombinedMolecule(core_mol(),
-                                {FragmentLib::instance().fragment("Br")});
+    auto mol = CombinedMolecule(core_mol(), {});
+    auto fragment = FragmentLib::instance().fragment("Br");
+
+    // Place the fragment in a specific location
+    fragment.coordinates[0] = {3.539590, -1.404700,	-0.000018};
+    mol.fragments = {fragment};
 
     // Built molecule should have a lower repulsion than a close translation
     // of the fragment

@@ -26,9 +26,9 @@ namespace molfunc{
              for (int j=0; j<num; j++){
                  for (int k=0; k<num; k++){
 
-                     array<double, 3> arr = {min_value + diff*static_cast<double>(i)/(num-1),
-                                             min_value + diff*static_cast<double>(j)/(num-1),
-                                             min_value + diff*static_cast<double>(k)/(num-1)};
+                     GridPoint arr = {min_value + diff*static_cast<double>(i)/(num-1),
+                                      min_value + diff*static_cast<double>(j)/(num-1),
+                                      min_value + diff*static_cast<double>(k)/(num-1)};
                      this->push_back(arr);
 
                  }// k
@@ -36,5 +36,29 @@ namespace molfunc{
          }// i
     }
 
+    GridPoint Grid3D::minimum_energy_point(){
+        /*****************************************
+         *  Get the grid point at which the
+         *  energy is a minimum
+         *
+         *  Returns:
+         *      (GridPoint):
+         ***************************************/
+
+        if (this->empty()){
+            throw out_of_range("Cannot find the minimum in a "
+                               "empty grid");
+        }
+
+        auto min_e_point = this->begin();
+
+        for (auto it = this->begin(); it != this->end(); ++it) {
+            if (it->energy < min_e_point->energy) {
+                min_e_point = it;
+            }
+        }
+
+        return *min_e_point;
+    }
 }
 

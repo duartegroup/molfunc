@@ -67,11 +67,10 @@ namespace molfunc{
             translate_fragment(fragments[i],
                                dummy_idxs[i]);
 
-            //prune_rotational_space(fragments[i]);
+            exclude_rotational_space(fragments[i], 0.1);
         }
 
         rotate_fragments();
-
     }
 
     void CombinedMolecule::translate_fragment(Fragment &fragment,
@@ -229,8 +228,9 @@ namespace molfunc{
 
             rot_mat.update(rot_grid[i]);
             fragment.rotate(rot_mat);
+            rot_grid[i].energy = repulsive_energy(fragment);
 
-            if (repulsive_energy(fragment) > threshold){
+            if (rot_grid[i].energy > threshold){
                  rot_grid.erase(rot_grid.begin()+i);
             }
 
@@ -246,12 +246,19 @@ namespace molfunc{
          *
          *
          ****************************************************/
-        return;
 
-        for (auto &fragment : fragments){
-            exclude_rotational_space(fragment, 0.1);
+        if (fragments.size() == 1){
+            // No global optimisation needs to be done - simply
+            // use the minimum energy rotation of the fragment
+            auto frag = fragments[0];
+            auto point = frag.rot_grid_w.minimum_energy_point();
+
+            auto rot_mat = RotationMatrix();
+            rot_mat.update(point);
+
+            frag.rotate(rot_mat);
+            return;
         }
-
 
     }
 }
