@@ -62,5 +62,14 @@ namespace molfunc{
 
         return *min_e_point;
     }
+
+    GridPoint Grid3D::random_point(){
+        /*********************************
+         * Generate a random point within
+         * the rotation grid
+         ********************************/
+
+        return this->data()[random() % this->size()];
+    }
 }
 

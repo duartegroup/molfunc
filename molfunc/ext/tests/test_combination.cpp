@@ -37,6 +37,28 @@ CoreMolecule core_mol(){
 }
 
 
+CoreMolecule core_mol_two_sites(){
+
+    ofstream xyz_file ("core.xyz");
+    if (xyz_file.is_open()){
+        xyz_file << "5\n"
+                    "\n"
+                    "C          1.57959       -1.40470        0.00000\n"
+                    "R          2.68899       -1.40471        0.00000\n"
+                    "R          1.20979       -0.63118       -0.70404\n"
+                    "H          1.20978       -1.18174        1.02191\n"
+                    "H          1.20978       -2.40119       -0.31787\n";
+        xyz_file.close();
+    }
+    else throw runtime_error("Unable to open core.xyz");
+
+    CoreMolecule core = CoreMolecule("core.xyz");
+    remove("core.xyz");
+
+    return core;
+}
+
+
 TEST_CASE("Test CombinedMolecule init from only a core"){
 
     auto core = core_mol();
@@ -110,3 +132,18 @@ TEST_CASE("Test simple ethane combined construction") {
     REQUIRE(mol.repulsive_energy() < 1);
 }
 
+
+
+TEST_CASE("Test simple propane combined construction") {
+
+    auto core = core_mol_two_sites();
+    vector<Fragment> fragments = {FragmentLib::instance().fragment("Me"),
+                                  FragmentLib::instance().fragment("Me")};
+
+    auto mol = CombinedMolecule(core, fragments);
+
+    cerr << mol.repulsive_energy() << endl;
+    mol.to_molecule().print_xyz_file("tmp.xyz");
+
+    REQUIRE(mol.repulsive_energy() < 2);
+}

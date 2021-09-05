@@ -159,5 +159,25 @@ namespace molfunc{
         }
     }
 
+    void Species::rotate(const RotationMatrix &R, const Coordinate &origin){
+        /*********************************************************
+         * Rotate this species using a rotation matrix about a
+         * defined origin in space
+         *
+         * Arguments:
+         *      R (RotationMatrix): (3x3)
+         *
+         *      origin (Coordinate):
+         ********************************************************/
+
+        for (auto &coord : coordinates) coord -= origin;
+        rotate(R);
+        for (auto &coord : coordinates) coord += origin;
+    }
+
+    void Species::rotate(const RotationMatrix &R, unsigned long atom_idx){
+        rotate(R, coordinates[atom_idx]);
+    }
+
 }
 

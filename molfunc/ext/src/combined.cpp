@@ -1,7 +1,10 @@
 #include "vector"
+#include "algorithm"
 #include "stdexcept"
 #include "combined.h"
 #include "iostream"
+#include "random"
+
 
 using namespace std;
 
@@ -124,12 +127,7 @@ namespace molfunc{
          *        ^
          *    fragment
          **************************************************************/
-        auto y_idx = fragment.graph.first_neighbour(fragment.dummy_idx);
-        auto y_coord = fragment.coordinates[y_idx];
 
-        // Shift both the core nd the fragment to the new origin
-        for (auto &coord: core.coordinates) coord -= y_coord;
-        for (auto &coord: fragment.coordinates) coord -= y_coord;
     }
 
     Molecule CombinedMolecule::to_molecule() {
@@ -232,7 +230,13 @@ namespace molfunc{
          * Arguments:
          *      fragment:
          ****************************************************/
-        centre_core_and_fragment_to(fragment);
+        auto y_idx = fragment.graph.first_neighbour(fragment.dummy_idx);
+        auto y_coord = fragment.coordinates[y_idx];
+
+        // Shift both the core nd the fragment to the new origin
+        for (auto &coord: core.coordinates) coord -= y_coord;
+        for (auto &coord: fragment.coordinates) coord -= y_coord;
+
         fragment.cache_coordinates();
 
         auto rot_mat = RotationMatrix();
@@ -255,6 +259,15 @@ namespace molfunc{
         }
 
         if (fragment.rot_grid_w.empty()) throw runtime_error("Deleted all points!");
+
+        // Shift back
+        for (auto &coord: core.coordinates) coord += y_coord;
+        for (auto &coord: fragment.coordinates) coord += y_coord;
+
+        // cerr << "Removed: " <<
+        //                     static_cast<double>(fragment.rot_grid_w.size())
+        //                     / static_cast<double>(end_idx)
+        //                     << endl;
     }
 
     void CombinedMolecule::rotate_fragments_global(){
@@ -277,6 +290,48 @@ namespace molfunc{
             rot_mat.update(point);
             fragments[0].rotate(rot_mat);
             return;
+        }
+
+        int max_iters = 10;
+        double min_energy = INFINITY;
+
+        vector<GridPoint> min_points, points;
+        points.reserve(fragments.size());
+
+        return;
+        for (auto &frag : fragments) frag.cache_coordinates();
+
+        for (int iter=0; iter<max_iters; iter++){
+
+            points.clear();   // The points used to rotate
+
+            for (auto &frag : fragments){
+
+                auto point = frag.rot_grid_w.random_point();
+                points.push_back(point);
+
+                rot_mat.update(point);
+                frag.rotate(rot_mat,
+                            frag.graph.first_neighbour(frag.dummy_idx));
+            }
+
+            if (repulsive_energy() < min_energy){
+                min_points = points;
+                min_energy = repulsive_energy();
+            }
+
+            for (auto &frag : fragments){
+                frag.reset_coordinates();
+            }
+        }
+
+
+        // Finally, apply the minimum energy rotation
+        for (int i=0; i<fragments.size(); i++){
+
+            rot_mat.update(min_points[i]);
+            fragments[i].rotate(rot_mat,
+                                fragments[i].graph.first_neighbour(fragments[i].dummy_idx));
         }
 
     }

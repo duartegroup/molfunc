@@ -20,6 +20,7 @@ namespace molfunc{
             Vector3D operator- (const Coordinate& other);
             Coordinate operator-= (const Coordinate& other);
             Vector3D operator+ (const Coordinate& other);
+            Coordinate operator+= (const Coordinate& other);
 
             double x();
             double y();

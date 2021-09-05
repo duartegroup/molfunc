@@ -24,6 +24,7 @@ namespace molfunc{
             Grid3D(double min_value, double max_value, unsigned int num);
 
             GridPoint minimum_energy_point();
+            GridPoint random_point();
 
     };
 }

@@ -24,6 +24,8 @@ namespace molfunc{
             void translate(const Vector3D &vec);
 
             void rotate(const RotationMatrix &R);
+            void rotate(const RotationMatrix &R, unsigned long atom_idx);
+            void rotate(const RotationMatrix &R, const Coordinate &origin);
 
             Vector3D n_vector(unsigned long i, unsigned long j);
 
