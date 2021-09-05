@@ -37,12 +37,12 @@ TEST_CASE("Test minimum energy point"){
     for (auto &point : grid){
         point.energy = 1.0;
     }
-    grid[1].energy = 0.0;
+    grid[1].energy = 0.1;
 
     auto point = grid.minimum_energy_point();
 
     // Should pick the one with the smallest energy...
-    REQUIRE(utils::is_close(point.energy, 0.0));
+    REQUIRE(utils::is_close(point.energy, 0.1));
     // and be the second point in the list
     REQUIRE(utils::is_close(point[0], -1.0));
     REQUIRE(utils::is_close(point[1], -1.0));

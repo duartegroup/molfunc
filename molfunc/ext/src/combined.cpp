@@ -65,7 +65,7 @@ namespace molfunc{
 
         for (int i=0; i<fragments.size(); i++){
             translate_fragment(fragments[i], dummy_idxs[i]);
-            exclude_rotational_space(fragments[i], 0.1);
+            exclude_rotational_space(fragments[i], 0.9);
         }
 
         rotate_fragments_global();
@@ -128,8 +128,8 @@ namespace molfunc{
         auto y_coord = fragment.coordinates[y_idx];
 
         // Shift both the core nd the fragment to the new origin
-        for (auto coord: core.coordinates) coord -= y_coord;
-        for (auto coord: fragment.coordinates) coord -= y_coord;
+        for (auto &coord: core.coordinates) coord -= y_coord;
+        for (auto &coord: fragment.coordinates) coord -= y_coord;
     }
 
     Molecule CombinedMolecule::to_molecule() {
@@ -182,7 +182,7 @@ namespace molfunc{
         return energy;
     }
 
-    double CombinedMolecule::repulsive_energy(const Fragment& fragment) {
+    double CombinedMolecule::repulsive_energy(const Fragment &fragment) {
         /*********************************************************
          * Calculate the repulsive energy between the core and a
          * single fragment
@@ -236,24 +236,25 @@ namespace molfunc{
         fragment.cache_coordinates();
 
         auto rot_mat = RotationMatrix();
-        auto grid = fragment.rot_grid_w;
 
         // Enumerate backwards through the vector, so that the indexing
         // remains valid while deleting elements
-        int end_idx = static_cast<int>(grid.size() - 1);
+        int end_idx = static_cast<int>(fragment.rot_grid_w.size() - 1);
 
         for (int i=end_idx; i>=0; i--){
 
-            rot_mat.update(grid[i]);
+            rot_mat.update(fragment.rot_grid_w[i]);
             fragment.rotate(rot_mat);
-            grid[i].energy = repulsive_energy(fragment);
+            fragment.rot_grid_w[i].energy = repulsive_energy(fragment);
 
-            if (grid[i].energy > threshold){
-                 grid.erase(grid.begin() + i);
+            if (fragment.rot_grid_w[i].energy > threshold){
+                fragment.rot_grid_w.erase(fragment.rot_grid_w.begin() + i);
             }
 
             fragment.reset_coordinates();
         }
+
+        if (fragment.rot_grid_w.empty()) throw runtime_error("Deleted all points!");
     }
 
     void CombinedMolecule::rotate_fragments_global(){
@@ -269,13 +270,12 @@ namespace molfunc{
         if (fragments.size() == 1){
             // No global optimisation needs to be done - simply
             // use the minimum energy rotation of the fragment
-            auto frag = fragments[0];
-            centre_core_and_fragment_to(frag);
+            centre_core_and_fragment_to(fragments[0]);
 
-            auto point = frag.rot_grid_w.minimum_energy_point();
+            auto point = fragments[0].rot_grid_w.minimum_energy_point();
 
             rot_mat.update(point);
-            frag.rotate(rot_mat);
+            fragments[0].rotate(rot_mat);
             return;
         }
 

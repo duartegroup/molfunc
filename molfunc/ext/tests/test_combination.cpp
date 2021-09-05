@@ -73,8 +73,6 @@ TEST_CASE("Test simple H3CBr combined construction") {
     for (auto idx: h_atom_idxs){
         REQUIRE((mol.distance(idx, br_idx) > 2.0));   // r(Br-H) > 2.0 Å
     }
-
-    mol.print_xyz_file("tmp.xyz");
 }
 
 
@@ -101,3 +99,14 @@ TEST_CASE("Test simple repulsive energy"){
     REQUIRE(rep_e < mol.repulsive_energy());
 
 }
+
+
+TEST_CASE("Test simple ethane combined construction") {
+
+    auto core = core_mol();
+    vector<Fragment> fragments = {FragmentLib::instance().fragment("Me")};
+
+    auto mol = CombinedMolecule(core, fragments);
+    REQUIRE(mol.repulsive_energy() < 1);
+}
+

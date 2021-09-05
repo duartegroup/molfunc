@@ -1,4 +1,5 @@
 #include "grid.h"
+#include "iostream"
 
 
 namespace molfunc{
@@ -51,6 +52,7 @@ namespace molfunc{
         }
 
         auto min_e_point = this->begin();
+
 
         for (auto it = this->begin(); it != this->end(); ++it) {
             if (it->energy < min_e_point->energy) {
