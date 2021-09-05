@@ -27,7 +27,7 @@ namespace molfunc{
             Fragment(const Fragment &fragment);
 
             void reset_coordinates();
-
+            void cache_coordinates();
     };
 
 

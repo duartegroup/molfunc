@@ -51,7 +51,6 @@ namespace molfunc{
         }
 
         this->dummy_idx = masked_atom_idxs()[0];
-        this->cached_coordinates = vector<Coordinate>(coordinates);
     }
 
     Fragment::Fragment(const Fragment &fragment): Molecule(fragment) {
@@ -62,11 +61,25 @@ namespace molfunc{
         this->cached_coordinates = vector<Coordinate>(fragment.coordinates);
     }
 
+    void Fragment::cache_coordinates(){
+        /********************************************
+         * Cache the coordinates so that they may
+         * be reset following a translation/rotation
+         *******************************************/
+
+        this->cached_coordinates = vector<Coordinate>(coordinates);
+    }
+
     void Fragment::reset_coordinates(){
         /************************************
          * Reset the coordinates using the
          * cached values
          ***********************************/
+        if (cached_coordinates.empty()){
+            throw runtime_error("Cannot reset the coordinates, no "
+                                "cached coordinates found.");
+        }
+
          for (int i=0; i<n_atoms(); i++){
              coordinates[i] = cached_coordinates[i];
          }

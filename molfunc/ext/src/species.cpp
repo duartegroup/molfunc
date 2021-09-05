@@ -42,7 +42,7 @@ namespace molfunc{
          *      // mol.distance(0, 1) -> ~1.0
          ******************************************************************/
 
-        if (i >= n_atoms() ||j >= n_atoms() || coordinates.empty()){
+        if (i >= n_atoms() || j >= n_atoms() || coordinates.empty()){
             throw runtime_error("Invalid index: "+to_string(i)+" or "+ to_string(j)+
                                 " must be present in the molecule");
         }

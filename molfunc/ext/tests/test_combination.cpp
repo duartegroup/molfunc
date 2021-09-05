@@ -63,8 +63,18 @@ TEST_CASE("Test simple H3CBr combined construction") {
     vector<Fragment> fragments = {FragmentLib::instance().fragment("Br")};
 
     auto mol = CombinedMolecule(core, fragments).to_molecule();
+    int br_idx = 4;
 
-    REQUIRE((mol.distance(0, 4) > 1.5 && mol.distance(0, 4) < 2.5));
+    // Ensure the C-Br distance is reasonable
+    REQUIRE((mol.distance(0, br_idx) > 1.5 && mol.distance(0, br_idx) < 2.5));
+
+    // and that there are no short Br-H contacts
+    auto h_atom_idxs = vector<int>{1, 2, 3};
+    for (auto idx: h_atom_idxs){
+        REQUIRE((mol.distance(idx, br_idx) > 2.0));   // r(Br-H) > 2.0 Å
+    }
+
+    mol.print_xyz_file("tmp.xyz");
 }
 
 

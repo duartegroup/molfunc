@@ -64,17 +64,15 @@ namespace molfunc{
         vector<unsigned long> dummy_idxs = core.masked_atom_idxs();
 
         for (int i=0; i<fragments.size(); i++){
-            translate_fragment(fragments[i],
-                               dummy_idxs[i]);
-
+            translate_fragment(fragments[i], dummy_idxs[i]);
             exclude_rotational_space(fragments[i], 0.1);
         }
 
-        rotate_fragments();
+        rotate_fragments_global();
     }
 
     void CombinedMolecule::translate_fragment(Fragment &fragment,
-                                              unsigned long core_dummy_atom_idx){
+                                              unsigned long Ra_idx){
         /*********************************************
          * Translate the fragments such that the R
          * (dummy) atoms are coincident, then translated
@@ -96,25 +94,42 @@ namespace molfunc{
          * NOTE: will modify the fragment in-place
          ********************************************/
 
-        unsigned long x_idx = core.graph.first_neighbour(core_dummy_atom_idx);
-        array<double, 3> x_pos = core.coordinates[x_idx];
-
+        unsigned long x_idx = core.graph.first_neighbour(Ra_idx);
+        //                                                              Rb
         unsigned long y_idx = fragment.graph.first_neighbour(fragment.dummy_idx);
-        array<double, 3> y_pos = fragment.coordinates[y_idx];
 
         // Translate so x and y are coincident
-        fragment.translate({x_pos[0] - y_pos[0],
-                            x_pos[1] - y_pos[1],
-                            x_pos[2] - y_pos[2]});
+        fragment.translate(core.coordinates[x_idx] - fragment.coordinates[y_idx]);
 
         double xy_dist = (core.atoms[x_idx].covalent_radius()
                           + fragment.atoms[y_idx].covalent_radius());
 
-        // TODO this is v ugly. Eigen?
-        auto n_vec = core.n_vector(x_idx, core_dummy_atom_idx);
-        fragment.translate({xy_dist * n_vec[0],
-                            xy_dist * n_vec[2],
-                            xy_dist * n_vec[1]});
+        // Then so the x-y distance is reasonable
+        fragment.translate(core.n_vector(x_idx, Ra_idx) * xy_dist);
+    }
+
+    void CombinedMolecule::centre_core_and_fragment_to(Fragment &fragment){
+        /*****************************************************************
+         * Translate the core and the fragment and  such that the
+         * nearest neighbour to the R (dummy) atom is located at the origin.
+         * For example, for a methyl fragment this will translate the
+         * carbon to (0, 0, 0).
+         *
+         *         H
+         *          \
+         *      H---C---R
+         *         /
+         *       H
+         *
+         *        ^
+         *    fragment
+         **************************************************************/
+        auto y_idx = fragment.graph.first_neighbour(fragment.dummy_idx);
+        auto y_coord = fragment.coordinates[y_idx];
+
+        // Shift both the core nd the fragment to the new origin
+        for (auto coord: core.coordinates) coord -= y_coord;
+        for (auto coord: fragment.coordinates) coord -= y_coord;
     }
 
     Molecule CombinedMolecule::to_molecule() {
@@ -185,7 +200,7 @@ namespace molfunc{
 
         for (int i=0; i<core.n_atoms(); i++){
 
-            // TODO: something that is contigious in memory
+            // TODO: something that is contiguous in memory
             if (core.atoms[i].masked) continue;  // Skip masked atoms
 
             for (int j=0; j<fragment.n_atoms(); j++){
@@ -217,28 +232,31 @@ namespace molfunc{
          * Arguments:
          *      fragment:
          ****************************************************/
+        centre_core_and_fragment_to(fragment);
+        fragment.cache_coordinates();
 
         auto rot_mat = RotationMatrix();
-        auto rot_grid = fragment.rot_grid_w;
+        auto grid = fragment.rot_grid_w;
 
         // Enumerate backwards through the vector, so that the indexing
-        // remains valid
+        // remains valid while deleting elements
+        int end_idx = static_cast<int>(grid.size() - 1);
 
-        for (int i=(rot_grid.size()-1); i>=0; i--){
+        for (int i=end_idx; i>=0; i--){
 
-            rot_mat.update(rot_grid[i]);
+            rot_mat.update(grid[i]);
             fragment.rotate(rot_mat);
-            rot_grid[i].energy = repulsive_energy(fragment);
+            grid[i].energy = repulsive_energy(fragment);
 
-            if (rot_grid[i].energy > threshold){
-                 rot_grid.erase(rot_grid.begin()+i);
+            if (grid[i].energy > threshold){
+                 grid.erase(grid.begin() + i);
             }
 
             fragment.reset_coordinates();
         }
     }
 
-    void CombinedMolecule::rotate_fragments(){
+    void CombinedMolecule::rotate_fragments_global(){
         /*****************************************************
          * Rotate the fragments to minimise the total energy
          * using the repulsion and ...
@@ -246,16 +264,17 @@ namespace molfunc{
          *
          *
          ****************************************************/
+        auto rot_mat = RotationMatrix();
 
         if (fragments.size() == 1){
             // No global optimisation needs to be done - simply
             // use the minimum energy rotation of the fragment
             auto frag = fragments[0];
+            centre_core_and_fragment_to(frag);
+
             auto point = frag.rot_grid_w.minimum_energy_point();
 
-            auto rot_mat = RotationMatrix();
             rot_mat.update(point);
-
             frag.rotate(rot_mat);
             return;
         }

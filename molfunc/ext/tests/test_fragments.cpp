@@ -98,6 +98,7 @@ TEST_CASE("Test multiple fragments from lib"){
 
 TEST_CASE("Test coordinate reset"){
     auto fragment = br_fragment();
+    fragment.cache_coordinates();
 
     // Apply a random ish rotation to the fragment
     auto rot_mat = RotationMatrix();

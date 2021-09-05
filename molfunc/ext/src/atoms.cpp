@@ -152,4 +152,10 @@ namespace molfunc{
                 this->data()[1] - other[1],
                 this->data()[2] - other[2]};
     }
+    Coordinate Coordinate::operator-=(const Coordinate& other) {
+        this->data()[0] -= other[0],
+        this->data()[1] -= other[1],
+        this->data()[2] -= other[2];
+        return *this;
+    }
 }

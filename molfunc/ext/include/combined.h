@@ -25,12 +25,14 @@ namespace molfunc{
 
 
         protected:
-            void rotate_fragments();
+            void rotate_fragments_global();
             void exclude_rotational_space(Fragment &fragment,
                                           double threshold);
 
             void translate_fragment(Fragment &fragment,
-                                    unsigned long dummy_atom_idx);
+                                    unsigned long Ra_idx);
+
+            void centre_core_and_fragment_to(Fragment &fragment);
     };
 
 }
