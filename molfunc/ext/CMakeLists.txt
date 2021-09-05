@@ -13,7 +13,8 @@ add_library(molfunc STATIC
             include/combined.h src/combined.cpp
             include/species.h src/species.cpp
             include/rotation.h src/rotation.cpp
-            include/grid.h src/grid.cpp )
+            include/grid.h src/grid.cpp
+            include/vector3d.h src/vector3d.cpp)
 
 find_package(Catch2 REQUIRED)
 

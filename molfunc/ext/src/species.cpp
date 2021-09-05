@@ -57,7 +57,7 @@ namespace molfunc{
         return sqrt(sq_dist);
     }
 
-    void Species::translate(array<double, 3> vec){
+    void Species::translate(const Vector3D &vec){
         /*******************************************************************
          * Translate all the atoms in this molecule by a 3D vector (Å)
          *
@@ -84,7 +84,7 @@ namespace molfunc{
         return indexes;
     }
 
-    array<double, 3> Species::n_vector(unsigned long i, unsigned long j){
+    Vector3D Species::n_vector(unsigned long i, unsigned long j){
         /*******************************************************************
          * Normalised vector between to atoms i->j
          *
@@ -95,10 +95,8 @@ namespace molfunc{
          *
          ******************************************************************/
         double l = distance(i, j);  // Checks for range
-        array<double, 3> vec = {(coordinates[j][0] - coordinates[i][0]) / l,
-                                (coordinates[j][1] - coordinates[i][1]) / l,
-                                (coordinates[j][2] - coordinates[i][2]) / l};
-        return vec;
+
+        return (coordinates[j] - coordinates[i]) / l;
     }
 
     void Species::print_xyz_file(const string& filename){

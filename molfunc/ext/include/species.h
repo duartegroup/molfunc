@@ -21,11 +21,11 @@ namespace molfunc{
 
             double distance(unsigned long i, unsigned long j);
 
-            void translate(array<double, 3> vec);
+            void translate(const Vector3D &vec);
 
             void rotate(const RotationMatrix &R);
 
-            array<double, 3> n_vector(unsigned long i, unsigned long j);
+            Vector3D n_vector(unsigned long i, unsigned long j);
 
             vector<unsigned long> masked_atom_idxs();
 

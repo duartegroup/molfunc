@@ -141,4 +141,15 @@ namespace molfunc{
         return os;
     }
 
+    Vector3D Coordinate::operator+(const Coordinate& other) {
+        return {this->data()[0] + other[0],
+                this->data()[1] + other[1],
+                this->data()[2] + other[2]};
+    }
+
+    Vector3D Coordinate::operator-(const Coordinate& other) {
+        return {this->data()[0] - other[0],
+                this->data()[1] - other[1],
+                this->data()[2] - other[2]};
+    }
 }

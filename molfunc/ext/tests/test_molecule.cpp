@@ -1,5 +1,6 @@
 #include "molecules.h"
 #include "utils.h"
+#include "vector3d.h"
 #include "stdexcept"
 #include <iostream>
 #include <fstream>
@@ -143,9 +144,9 @@ TEST_CASE("Test core molecule construction"){
 TEST_CASE("Test molecule translation"){
     Molecule methane = methane_molecule();
 
-    array<double, 3> vec = {-methane.coordinates[0][0],
-                            -methane.coordinates[0][1],
-                            -methane.coordinates[0][2]};
+    Vector3D vec = {-methane.coordinates[0][0],
+                    -methane.coordinates[0][1],
+                    -methane.coordinates[0][2]};
     methane.translate(vec);
     methane.print_xyz_file("tmp.xyz");
 

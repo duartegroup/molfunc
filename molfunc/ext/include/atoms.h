@@ -1,5 +1,6 @@
 #ifndef MOLFUNC_ATOMS_H
 #define MOLFUNC_ATOMS_H
+#include "vector3d.h"
 #include "string"
 #include "array"
 #include <memory>
@@ -16,10 +17,12 @@ namespace molfunc{
             friend std::ostream& operator<< ( std::ostream& os,
                                              const Coordinate& c );
 
+            Vector3D operator- (const Coordinate& other);
+            Vector3D operator+ (const Coordinate& other);
+
             double x();
             double y();
             double z();
-
     };
 
 
