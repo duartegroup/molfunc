@@ -1,4 +1,4 @@
-#include "molecules.h"
+#include "species/molecules.h"
 #include "utils.h"
 #include "vector3d.h"
 #include "stdexcept"
@@ -158,4 +158,3 @@ TEST_CASE("Test molecule translation"){
 
     remove("tmp.xyz");
 }
-

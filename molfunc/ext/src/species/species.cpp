@@ -1,9 +1,11 @@
-#include "species.h"
+#include "species/species.h"
 #include <fstream>
 #include <string>
 #include <iomanip>
 #include "cmath"
 #include "memory"
+
+#include "iostream"
 
 
 namespace molfunc{
@@ -176,7 +178,7 @@ namespace molfunc{
     }
 
     void Species::rotate(const RotationMatrix &R, unsigned long atom_idx){
-        rotate(R, coordinates[atom_idx]);
+        rotate(R, Coordinate(coordinates[atom_idx]));
     }
 
 }

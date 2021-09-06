@@ -1,6 +1,6 @@
 #include <iostream>
 #include <algorithm>
-#include "fragments.h"
+#include "species/fragments.h"
 #include "utils.h"
 
 
@@ -51,6 +51,7 @@ namespace molfunc{
         }
 
         this->dummy_idx = masked_atom_idxs()[0];
+        this->dummy_nn_idx = graph.first_neighbour(dummy_idx);
     }
 
     Fragment::Fragment(const Fragment &fragment): Molecule(fragment) {
@@ -58,6 +59,7 @@ namespace molfunc{
         this->rot_grid_w = fragment.rot_grid_w;
         this->aliases = fragment.aliases;
         this->dummy_idx = fragment.dummy_idx;
+        this->dummy_nn_idx = fragment.dummy_nn_idx;
         this->cached_coordinates = vector<Coordinate>(fragment.coordinates);
     }
 
@@ -83,6 +85,24 @@ namespace molfunc{
          for (int i=0; i<n_atoms(); i++){
              coordinates[i] = cached_coordinates[i];
          }
+    }
+
+    void Fragment::rotate(GridPoint &grid_point){
+        /************************************************
+         * Rotate this fragment using a point in the grid
+         ***********************************************/
+         rotation_matrix.update(grid_point);
+         Species::rotate(rotation_matrix);
+    }
+
+    void Fragment::rotate_about_dummy_nn(GridPoint &grid_point){
+        /************************************************
+         * Rotate this fragment using a point in the grid
+         * on a defined atom index (i.e. coordinate in
+         * space)
+         ***********************************************/
+        rotation_matrix.update(grid_point);
+        Species::rotate(rotation_matrix, dummy_nn_idx);
     }
 
     FragmentLib::FragmentLib() {
@@ -154,5 +174,4 @@ namespace molfunc{
         throw domain_error("Failed to find a fragment with an alias "+
                            name+" in the library");
     }
-
 }

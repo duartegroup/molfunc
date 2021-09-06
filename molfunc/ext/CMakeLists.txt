@@ -6,12 +6,12 @@ include_directories(include/)
 
 add_library(molfunc STATIC
             include/atoms.h src/atoms.cpp
-            include/molecules.h src/molecules.cpp
+            include/species/molecules.h src/species/molecules.cpp
             include/graph.h src/graph.cpp
             include/utils.h src/utils.cpp
-            include/fragments.h src/fragments.cpp
-            include/combined.h src/combined.cpp
-            include/species.h src/species.cpp
+            include/species/fragments.h src/species/fragments.cpp
+            include/species/combined.h src/species/combined.cpp
+            include/species/species.h src/species/species.cpp
             include/rotation.h src/rotation.cpp
             include/grid.h src/grid.cpp
             include/vector3d.h src/vector3d.cpp)

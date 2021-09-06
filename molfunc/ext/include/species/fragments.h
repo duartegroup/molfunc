@@ -15,10 +15,12 @@ namespace molfunc{
 
         protected:
             vector<Coordinate> cached_coordinates;
+            RotationMatrix rotation_matrix = RotationMatrix();
 
         public:
             vector<string> aliases;
             unsigned long dummy_idx = 0;
+            unsigned long dummy_nn_idx = 0;
             Grid3D rot_grid_w = Grid3D(0.001, 3.14, 10);
 
             // Constructors
@@ -28,6 +30,9 @@ namespace molfunc{
 
             void reset_coordinates();
             void cache_coordinates();
+
+            void rotate(GridPoint &grid_point);
+            void rotate_about_dummy_nn(GridPoint &grid_point);
     };
 
 

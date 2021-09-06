@@ -1,4 +1,4 @@
-#include "molecules.h"
+#include "species/molecules.h"
 #include "utils.h"
 #include "iostream"
 #include "catch2/catch.hpp"
@@ -106,3 +106,31 @@ TEST_CASE("Test equal distro of rotations"){
 
     }
 }
+
+
+
+TEST_CASE("Test molecule rotation about an atom"){
+
+    vector<Atom3D> atoms = {Atom3D("H", 1.0, 0.0, 0.0),
+                            Atom3D("H", 2.0, 0.0, 0.0)};
+    auto mol = Molecule(atoms);
+
+    RotationMatrix rot_mat = {{
+                                {{-1.0, 0.0, 0.0},
+                                 {0.0, -1.0, 0.0},
+                                  {{0.0, 0.0, 1.0}}}
+                               }};
+
+    // Should swing the second atom round to the origin
+    mol.rotate(rot_mat, 0);
+
+    REQUIRE(utils::is_close(mol.coordinates[1], {0.0, 0.0, 0.0}));
+
+    // Rotate back to the starting place and check that if the origin is
+    // not at the first atom then the second isn't close to the origin any more
+    mol.rotate(rot_mat, 0);
+    mol.rotate(rot_mat);
+    REQUIRE_FALSE(utils::is_close(mol.coordinates[1], {0.0, 0.0, 0.0}));
+}
+
+

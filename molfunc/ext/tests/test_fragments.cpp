@@ -1,4 +1,4 @@
-#include "fragments.h"
+#include "species/fragments.h"
 #include "rotation.h"
 #include "utils.h"
 #include "stdexcept"
@@ -101,9 +101,8 @@ TEST_CASE("Test coordinate reset"){
     fragment.cache_coordinates();
 
     // Apply a random ish rotation to the fragment
-    auto rot_mat = RotationMatrix();
-    rot_mat.update(1.0, 0.1, 0.2);
-    fragment.rotate(rot_mat);
+    GridPoint point = {1.0, 0.1, 0.2};
+    fragment.rotate(point);
 
     REQUIRE_FALSE(utils::is_close(fragment.coordinates[0].x(), 0.92450));
 

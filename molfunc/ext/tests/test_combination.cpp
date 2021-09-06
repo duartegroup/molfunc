@@ -1,8 +1,9 @@
 #include <iostream>
 #include <fstream>
-#include "molecules.h"
-#include "fragments.h"
-#include "combined.h"
+#include "utils.h"
+#include "species/molecules.h"
+#include "species/fragments.h"
+#include "species/combined.h"
 #include "catch2/catch.hpp"
 
 using namespace std;
@@ -129,9 +130,22 @@ TEST_CASE("Test simple ethane combined construction") {
     vector<Fragment> fragments = {FragmentLib::instance().fragment("Me")};
 
     auto mol = CombinedMolecule(core, fragments);
-    REQUIRE(mol.repulsive_energy() < 1);
-}
 
+    REQUIRE(mol.repulsive_energy() < 1);
+
+    // Check the new carbon-carbon distance is reasonable
+    auto full_mol = mol.to_molecule();
+    REQUIRE(full_mol.n_atoms() == 8);
+
+    for (int atom_idx=1; atom_idx<full_mol.n_atoms(); atom_idx++){
+
+        if (full_mol.atoms[1].symbol != "C") continue;
+
+        REQUIRE(utils::is_close(full_mol.distance(0, atom_idx),
+                                1.5,       // r^0(C-C) ~ 1.5 Å
+                                0.2));     // absolute tolerance (Å)
+    }
+}
 
 
 TEST_CASE("Test simple propane combined construction") {

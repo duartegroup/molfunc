@@ -19,6 +19,7 @@ namespace molfunc{
 
             double repulsive_energy();
             double repulsive_energy(const Fragment& fragment);
+
             void build();
 
             Molecule to_molecule();
@@ -31,8 +32,6 @@ namespace molfunc{
 
             void translate_fragment(Fragment &fragment,
                                     unsigned long Ra_idx);
-
-            void centre_core_and_fragment_to(Fragment &fragment);
     };
 
 }
