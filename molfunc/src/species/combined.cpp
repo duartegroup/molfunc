@@ -15,16 +15,27 @@ namespace molfunc{
 
     CombinedMolecule::CombinedMolecule(CoreMolecule core,
                                        vector<Fragment> fragments) {
-        /*********************************************
-         * Generate a combined molecule from a core
-         * and a number of fragments
+        /************************************************************
+         * Generate a combined molecule from a core and a number of
+         * fragments e.g.
+         *
+         *
+         *            H      H                 H       F_1
+         *             C -- C                   C -- C
+         *           //     \\                //     \\
+         *        H C        C H     -->   H C        C  F_1
+         *           \      /                 \      /
+         *            C == C                   C == C
+         *           H      H                 H      H
+         *
+         *
+         *  where F_1 and F_2 are two fragments that replace hydrogens
          *
          * Arguments:
          *      core (CoreMolecule):
          *
-         *      fragments (list(Fragment)): Modified
-         *                                  in place
-         ********************************************/
+         *      fragments (list(Fragment)): Modified in place
+         ***********************************************************/
 
         this->core = move(core);
         this->fragments = move(fragments);
@@ -144,10 +155,13 @@ namespace molfunc{
          * Calculate the repulsive energy between the fragments
          * and the core
          *
-         *      E = Σ_fragments Σ_ij 1/(r_ij^4)
+         *      E =  Σ_ij 1/(r_ij^4)
          *
-         * for all unique pairs where i enumerates atoms in the
-         * core and j atoms in the specific fragment.
+         * for all unique pairs. NOTE: bonded repulsions are
+         * included, but just provide a constant shift to the
+         * rigid-body energy. Also there are relatively few bonded
+         * pairs making the wasted evaluations not too severe an
+         * overhead.
          *
          * Returns:
          *      E (float): Repulsive energy
