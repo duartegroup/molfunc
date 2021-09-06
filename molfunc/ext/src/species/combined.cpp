@@ -68,7 +68,7 @@ namespace molfunc{
 
         for (int i=0; i<fragments.size(); i++){
             translate_fragment(fragments[i], dummy_idxs[i]);
-            exclude_rotational_space(fragments[i], 0.9);
+            exclude_rotational_space(fragments[i], 2.0);
         }
 
         rotate_fragments_global();
@@ -153,10 +153,40 @@ namespace molfunc{
          *      E (float): Repulsive energy
          ********************************************************/
 
+        vector<Coordinate> coords;
+
+        // Reserve at least enough space to store all the coordinates
+        unsigned long total_n_atoms = core.n_atoms();
+        for (auto &frag : fragments) total_n_atoms += frag.n_atoms();
+        coords.reserve(total_n_atoms);
+
+        // Populate the coordinates with the unmasked core atoms
+        for (int i=0; i<core.n_atoms(); i++){
+            if (!core.atoms[i].masked) coords.push_back(core.coordinates[i]);
+        }
+        // and from each of the fragments
+        for (auto &frag : fragments){
+            for (int i=0; i<frag.n_atoms(); i++){
+                if (!frag.atoms[i].masked) coords.push_back(frag.coordinates[i]);
+            }
+        }
+
         double energy = 0.0;
 
-        for (const auto &fragment : fragments){
-            energy += repulsive_energy(fragment);
+        // Enumerate all pairwise
+        for (int i=0; i<coords.size(); i++){
+            for (int j=i+1; j<coords.size(); j++){
+
+                // inline r^2 evaluation for speed(?)
+                double r_sq = 0.0;
+
+                for (int k=0; k<3; k++){
+                    double tmp = (coords[i][k] - coords[j][k]);
+                    r_sq += tmp * tmp;
+                }
+
+                energy += 1.0 / (r_sq * r_sq);
+            }
         }
 
         return energy;
@@ -263,7 +293,7 @@ namespace molfunc{
             return;
         }
 
-        int max_iters = 100;
+        int max_iters = 1000;
         double min_energy = INFINITY;
 
         vector<GridPoint> min_points, points;

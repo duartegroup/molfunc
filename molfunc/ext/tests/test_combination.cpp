@@ -60,6 +60,35 @@ CoreMolecule core_mol_two_sites(){
 }
 
 
+CoreMolecule benzene_core_mol(){
+
+    ofstream xyz_file ("core.xyz");
+    if (xyz_file.is_open()){
+        xyz_file << "12\n"
+                    "\n"
+                    "C         -3.21403        0.67662       -0.00000\n"
+                    "C         -3.20743       -0.72241       -0.00000\n"
+                    "C         -2.00574        1.38185       -0.00000\n"
+                    "C         -0.79085        0.68805       -0.00000\n"
+                    "C         -0.78424       -0.71098       -0.00000\n"
+                    "C         -1.99254       -1.41621       -0.00000\n"
+                    "H         -1.98743       -2.49853        0.00000\n"
+                    "H         -4.14220       -1.26800       -0.00000\n"
+                    "H         -4.15391        1.21336       -0.00000\n"
+                    "H         -2.01085        2.46417       -0.00000\n"
+                    "R          0.14392        1.23364       -0.00000\n"
+                    "R          0.15563       -1.24772       -0.00000\n";
+        xyz_file.close();
+    }
+    else throw runtime_error("Unable to open core.xyz");
+
+    CoreMolecule core = CoreMolecule("core.xyz");
+    remove("core.xyz");
+
+    return core;
+}
+
+
 TEST_CASE("Test CombinedMolecule init from only a core"){
 
     auto core = core_mol();
@@ -131,7 +160,7 @@ TEST_CASE("Test simple ethane combined construction") {
 
     auto mol = CombinedMolecule(core, fragments);
 
-    REQUIRE(mol.repulsive_energy() < 1);
+    REQUIRE(mol.repulsive_energy() < 7);
 
     // Check the new carbon-carbon distance is reasonable
     auto full_mol = mol.to_molecule();
@@ -139,7 +168,7 @@ TEST_CASE("Test simple ethane combined construction") {
 
     for (int atom_idx=1; atom_idx<full_mol.n_atoms(); atom_idx++){
 
-        if (full_mol.atoms[1].symbol != "C") continue;
+        if (full_mol.atoms[atom_idx].symbol != "C") continue;
 
         REQUIRE(utils::is_close(full_mol.distance(0, atom_idx),
                                 1.5,       // r^0(C-C) ~ 1.5 Å
@@ -155,9 +184,15 @@ TEST_CASE("Test simple propane combined construction") {
                                   FragmentLib::instance().fragment("Me")};
 
     auto mol = CombinedMolecule(core, fragments);
+    REQUIRE(mol.repulsive_energy() < 10);
+}
 
-    cerr << mol.repulsive_energy() << endl;
-    mol.to_molecule().print_xyz_file("tmp.xyz");
 
-    REQUIRE(mol.repulsive_energy() < 2);
+TEST_CASE("Test o-ditertbutylbenzene combined construction"){
+    auto core = benzene_core_mol();
+    vector<Fragment> fragments = {FragmentLib::instance().fragment("tBu"),
+                                  FragmentLib::instance().fragment("tBu")};
+
+    auto mol = CombinedMolecule(core, fragments);
+    REQUIRE(mol.repulsive_energy() < 30);
 }
