@@ -4,6 +4,7 @@ project(molfunc_ext)
 set(CMAKE_CXX_STANDARD 17)
 include_directories(include/)
 
+
 add_library(molfunc STATIC
             include/atoms.h src/atoms.cpp
             include/species/molecules.h src/species/molecules.cpp
@@ -15,6 +16,8 @@ add_library(molfunc STATIC
             include/rotation.h src/rotation.cpp
             include/grid.h src/grid.cpp
             include/vector3d.h src/vector3d.cpp)
+
+target_compile_options(molfunc PRIVATE -O3)
 
 find_package(Catch2 REQUIRED)
 
