@@ -5,10 +5,6 @@ build/
 
 dist/
 
-ffunc.egg-info/
-
-ffunc/__pycache__/
-
 .DS_Store
 
 molfunc.egg-info/
@@ -17,6 +13,6 @@ molfunc/__pycache__/
 
 tests/__pycache__/
 
-molfunc/ext/molfunc_ext.c
-
 molfunc/ext/cmake-build-debug/
+
+molfunc/molfunc_ext.cpp

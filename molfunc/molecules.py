@@ -1,6 +1,6 @@
 from typing import Sequence, Optional
-from molfunc_ext import (print_combined_molecule_from_names,
-                         print_combined_molecule_from_xyz_filenames)
+from molfunc_ext import (print_combined_from_names,
+                         print_combined_from_xyz_filenames)
 
 
 def _frag_smiles_to_xyz_filenames(smiles_list: Sequence[str]) -> Sequence[str]:
@@ -98,13 +98,13 @@ def print_combined_molecule(core_xyz_filename:  str,
         atoms_to_del[i] -= 1
 
     if frag_names is not None:
-        print_combined_molecule_from_names(f'{name}.xyz',
-                                           core_xyz_filename,
-                                           atoms_to_del,
-                                           frag_names)
+        print_combined_from_names(f'{name}.xyz',
+                                  core_xyz_filename,
+                                  atoms_to_del,
+                                  frag_names)
     else:
-        print_combined_molecule_from_xyz_filenames(f'{name}.xyz',
-                                                   core_xyz_filename,
-                                                   atoms_to_del,
-                                                   frag_xyz_filenames)
+        print_combined_from_xyz_filenames(f'{name}.xyz',
+                                          core_xyz_filename,
+                                          atoms_to_del,
+                                          frag_xyz_filenames)
     return None

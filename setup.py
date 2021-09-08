@@ -3,9 +3,10 @@ from Cython.Build import cythonize
 from setuptools.extension import Extension
 
 extensions = [Extension('molfunc_ext',
-                        [f'molfunc/molfunc.pyx'],
+                        [f'molfunc/molfunc_ext.pyx'],
                         include_dirs=['molfunc/include'],
                         language='c++',
+                        compiler_directives={'language_level': '3'},
                         extra_compile_args=["-std=c++17", "-Wno-missing-braces"],
                         extra_link_args=["-std=c++17"]
                         )]
