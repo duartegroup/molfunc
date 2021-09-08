@@ -51,7 +51,7 @@ namespace molfunc{
 
         double sq_dist = 0.0;
 
-        for (int k=0; k<3; k++){
+        for (auto k=0; k<3; k++){
             double tmp = coordinates[i][k] - coordinates[j][k];
             sq_dist += tmp * tmp;
         }
@@ -124,7 +124,7 @@ namespace molfunc{
             xyz_file << to_string(n_unmasked_atoms()) << '\n'
             << "molfunc generated" << '\n';
 
-            for (int i=0; i<n_atoms(); i++){
+            for (unsigned long i=0; i<n_atoms(); i++){
 
                 if (atoms[i].masked) continue;  // Skip masked atoms
 

@@ -1,20 +1,19 @@
 from setuptools import setup
 from Cython.Build import cythonize
 from setuptools.extension import Extension
-import os
 
-# Try to build the extension from the Cython generated C
-if os.path.exists('molfunc/ext/molfunc_ext.c'):
-    ext = 'c'
-else:
-    ext = 'pyx'
-
-extensions = [Extension('molfunc_ext', [f'molfunc/ext/molfunc_ext.{ext}'])]
+extensions = [Extension('molfunc_ext',
+                        [f'molfunc/molfunc.pyx'],
+                        include_dirs=['molfunc/include'],
+                        language='c++',
+                        extra_compile_args=["-std=c++17", "-Wno-missing-braces"],
+                        extra_link_args=["-std=c++17"]
+                        )]
 
 setup(name='molfunc',
-      version='1.0.0',
+      version='2.0.0',
       packages=['molfunc'],
-      package_data={'': ['fragments_lib/*']},
+      package_data={'': ['src/species/data/*']},
       license='MIT',
       author='Tom Young',
       url='https://github.com/duartegroup/molfunc',

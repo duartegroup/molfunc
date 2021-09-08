@@ -11,6 +11,63 @@ using namespace std;
 
 namespace molfunc{
 
+    void print_combined_molecule_from_names(const string& xyz_filename,
+                                            const string& core_xyz_filename,
+                                            const vector<unsigned int>& atom_idxs_to_del,
+                                            const vector<string>& frag_names){
+        /*************************************************************
+         * Generate and print a .xyz file for a combined molecule
+         * from a core 3D structure and names of fragments that may,
+         * or may not be present in the fragment library
+         *
+         *  xyz_filename: Name of the generated .xyz file
+         *
+         *  core_xyz_filename:
+         *
+         *  frag_names: Names of the fragments e.g. {'Me', ...}
+         ************************************************************/
+
+        auto core = CoreMolecule(xyz_filename,
+                                 atom_idxs_to_del);
+
+        vector<Fragment> fragments;
+        fragments.reserve(frag_names.size());
+        for (auto &name : frag_names){
+            fragments.push_back(FragmentLib::instance().fragment(name));
+        }
+
+        CombinedMolecule(core, fragments).to_molecule().print_xyz_file(xyz_filename);
+    }
+
+    void print_combined_molecule_from_xyz_filenames(const string& xyz_filename,
+                                                    const string& core_xyz_filename,
+                                                    const vector<unsigned int>& atom_idxs_to_del,
+                                                    const vector<string>& frag_xyz_filenames){
+        /******************************************************************
+         * Generate and print a .xyz file for a combined molecule
+         * from a core 3D structure and filenames of .xys files
+         * which contain an R atom
+         *
+         *  xyz_filename: Name of the generated .xyz file
+         *
+         *  core_xyz_filename:
+         *
+         *  frag_xyz_filenames: Names of the fragments e.g. {'Me.xyz', ...}
+         *****************************************************************/
+
+        auto core = CoreMolecule(xyz_filename,
+                                 atom_idxs_to_del);
+
+        vector<Fragment> fragments;
+        fragments.reserve(frag_xyz_filenames.size());
+
+        for (auto &filename : frag_xyz_filenames){
+            fragments.emplace_back(filename);
+        }
+
+        CombinedMolecule(core, fragments).to_molecule().print_xyz_file(xyz_filename);
+    }
+
     CombinedMolecule::CombinedMolecule() = default;
 
     CombinedMolecule::CombinedMolecule(CoreMolecule core,
@@ -77,7 +134,7 @@ namespace molfunc{
         }
         vector<unsigned long> dummy_idxs = core.masked_atom_idxs();
 
-        for (int i=0; i<fragments.size(); i++){
+        for (unsigned long i=0; i<fragments.size(); i++){
             translate_fragment(fragments[i], dummy_idxs[i]);
             exclude_rotational_space(fragments[i], 2.0);
         }
@@ -127,7 +184,7 @@ namespace molfunc{
         **********************************************************/
         vector<Atom3D> atoms;
 
-        for (int i=0; i<core.n_atoms(); i++){
+        for (unsigned long i=0; i<core.n_atoms(); i++){
 
             auto atom = core.atoms[i];  // Use a copy of the atom
 
@@ -137,7 +194,7 @@ namespace molfunc{
         }
 
         for (auto &fragment : fragments){
-            for (int i=0; i<fragment.n_atoms(); i++){
+            for (unsigned long i=0; i<fragment.n_atoms(); i++){
 
                 auto atom = fragment.atoms[i];  // Use a copy of the atom
 
@@ -175,12 +232,12 @@ namespace molfunc{
         coords.reserve(total_n_atoms);
 
         // Populate the coordinates with the unmasked core atoms
-        for (int i=0; i<core.n_atoms(); i++){
+        for (unsigned long i=0; i<core.n_atoms(); i++){
             if (!core.atoms[i].masked) coords.push_back(core.coordinates[i]);
         }
         // and from each of the fragments
         for (auto &frag : fragments){
-            for (int i=0; i<frag.n_atoms(); i++){
+            for (unsigned long i=0; i<frag.n_atoms(); i++){
                 if (!frag.atoms[i].masked) coords.push_back(frag.coordinates[i]);
             }
         }
@@ -188,13 +245,13 @@ namespace molfunc{
         double energy = 0.0;
 
         // Enumerate all pairwise
-        for (int i=0; i<coords.size(); i++){
-            for (int j=i+1; j<coords.size(); j++){
+        for (unsigned long i=0; i<coords.size(); i++){
+            for (unsigned long j=i+1; j<coords.size(); j++){
 
                 // inline r^2 evaluation for speed(?)
                 double r_sq = 0.0;
 
-                for (int k=0; k<3; k++){
+                for (auto k=0; k<3; k++){
                     double tmp = (coords[i][k] - coords[j][k]);
                     r_sq += tmp * tmp;
                 }
@@ -222,18 +279,18 @@ namespace molfunc{
 
         double energy = 0.0;
 
-        for (int i=0; i<core.n_atoms(); i++){
+        for (unsigned long i=0; i<core.n_atoms(); i++){
 
             // TODO: something that is contiguous in memory
             if (core.atoms[i].masked) continue;  // Skip masked atoms
 
-            for (int j=0; j<fragment.n_atoms(); j++){
+            for (unsigned long j=0; j<fragment.n_atoms(); j++){
 
                 if (fragment.atoms[j].masked) continue;
 
                 // inline r^2 evaluation for speed(?)
                 double r_sq = 0.0;
-                for (int k=0; k<3; k++){
+                for (auto k=0; k<3; k++){
                     double tmp = (core.coordinates[i][k]
                             - fragment.coordinates[j][k]);
                     r_sq += tmp * tmp;
@@ -338,7 +395,7 @@ namespace molfunc{
 
 
         // Finally, apply the minimum energy rotation
-        for (int i=0; i<fragments.size(); i++){
+        for (unsigned long i=0; i<fragments.size(); i++){
             fragments[i].rotate_about_dummy_nn(min_points[i]);
         }
 

@@ -23,9 +23,9 @@ namespace molfunc{
 
          double diff = max_value - min_value;
 
-         for (int i=0; i<num; i++){
-             for (int j=0; j<num; j++){
-                 for (int k=0; k<num; k++){
+         for (unsigned int i=0; i<num; i++){
+             for (unsigned int j=0; j<num; j++){
+                 for (unsigned int k=0; k<num; k++){
 
                      GridPoint arr = {min_value + diff*static_cast<double>(i)/(num-1),
                                       min_value + diff*static_cast<double>(j)/(num-1),

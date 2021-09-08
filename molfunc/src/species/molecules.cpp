@@ -78,7 +78,7 @@ namespace molfunc{
             throw runtime_error("Failed to open: "+xyz_filename);
         }
 
-        int decl_n_atoms = 0;  // Declared number of atoms
+        unsigned long decl_n_atoms = 0;  // Declared number of atoms
 
         // Iterate through the xyz file
         while (getline(xyz_file, line, '\n')) {

@@ -6,6 +6,15 @@
 
 namespace molfunc{
 
+    void print_combined_molecule_from_names(const string& xyz_filename,
+                                            const string& core_xyz_filename,
+                                            const vector<unsigned int>& atom_idxs_to_del,
+                                            const vector<string>& frag_names);
+
+    void print_combined_molecule_from_xyz_filenames(const string& xyz_filename,
+                                                    const string& core_xyz_filename,
+                                                    const vector<unsigned int>& atom_idxs_to_del,
+                                                    const vector<string>& frag_xyz_filenames);
     class CombinedMolecule {
 
         public:

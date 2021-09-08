@@ -82,7 +82,7 @@ namespace molfunc{
                                 "cached coordinates found.");
         }
 
-         for (int i=0; i<n_atoms(); i++){
+         for (unsigned long i=0; i<n_atoms(); i++){
              coordinates[i] = cached_coordinates[i];
          }
     }
