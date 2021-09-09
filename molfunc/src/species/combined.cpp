@@ -140,6 +140,7 @@ namespace molfunc{
         }
 
         rotate_fragments_global();
+        minimise_total_energy();
     }
 
     void CombinedMolecule::translate_fragment(Fragment &fragment,
@@ -400,6 +401,31 @@ namespace molfunc{
         }
 
     }
+
+    void CombinedMolecule::minimise_total_energy(){
+        /************************************************
+         * Minimise the total energy  (sum of repulsive
+         * and angle potentials) of the combined molecule
+         * with respect to rotations of the fragment(s).
+         *
+         *
+         ************************************************/
+
+        vector<AnglePotential> v_phi = angle_potentials();
+
+
+    }
+
+    vector<AnglePotential> CombinedMolecule::angle_potentials() {
+        /*******************************************************
+         *
+         *******************************************************/
+
+
+        return vector<AnglePotential>();
+    }
+
+
 }
 
 

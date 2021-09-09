@@ -158,3 +158,19 @@ TEST_CASE("Test molecule translation"){
 
     remove("tmp.xyz");
 }
+
+
+TEST_CASE("Test coordinate vectors"){
+
+    auto mol = methane_molecule();
+
+    auto vec = mol.coordinates[0] - mol.coordinates[1];
+
+    REQUIRE(utils::is_close(vec.length(),
+                            1.1,
+                            0.1));
+
+    // Normalising should make it very close to a unit vector
+    vec.normalise();
+    REQUIRE(utils::is_close(vec.length(), 1.0));
+}

@@ -23,7 +23,7 @@ add_library(molfunc STATIC
             include/rotation.h src/rotation.cpp
             include/grid.h src/grid.cpp
             include/vector3d.h src/vector3d.cpp
-        )
+        src/angles.cpp include/angles.h)
 
 target_compile_options(molfunc PRIVATE -O3)
 

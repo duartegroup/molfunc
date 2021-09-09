@@ -15,6 +15,12 @@ namespace molfunc{
             Vector3D operator* (double x);
             Vector3D operator+ (double x);
 
+            double length();
+
+            void normalise();
+
+            double dot(Vector3D &other);
+
     };
 
 }

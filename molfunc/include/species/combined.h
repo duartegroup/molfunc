@@ -2,6 +2,7 @@
 #define MOLFUNC_EXT_COMBINED_H
 #include "molecules.h"
 #include "fragments.h"
+#include "angles.h"
 #include "iostream"
 #include "string"
 
@@ -32,6 +33,8 @@ namespace molfunc{
             double repulsive_energy();
             double repulsive_energy(const Fragment& fragment);
 
+            vector<AnglePotential> angle_potentials();
+
             void build();
 
             Molecule to_molecule();
@@ -44,6 +47,8 @@ namespace molfunc{
 
             void translate_fragment(Fragment &fragment,
                                     unsigned long Ra_idx);
+
+            void minimise_total_energy();
     };
 
 }
