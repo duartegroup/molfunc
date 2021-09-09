@@ -1,5 +1,7 @@
 #ifndef MOLFUNC_EXT_GRID_H
 #define MOLFUNC_EXT_GRID_H
+#include "iostream"
+#include "string"
 #include "array"
 #include "vector"
 

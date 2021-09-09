@@ -1,6 +1,7 @@
 #ifndef MOLFUNC_EXT_UTILS_H
 #define MOLFUNC_EXT_UTILS_H
-#include <string>
+#include "iostream"
+#include "string"
 #include "vector"
 #include "atoms.h"
 

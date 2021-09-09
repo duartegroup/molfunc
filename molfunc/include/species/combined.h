@@ -2,6 +2,9 @@
 #define MOLFUNC_EXT_COMBINED_H
 #include "molecules.h"
 #include "fragments.h"
+#include "iostream"
+#include "string"
+
 
 
 namespace molfunc{

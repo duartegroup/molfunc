@@ -1,6 +1,8 @@
 #ifndef MOLFUNC_EXT_VECTOR3D_H
 #define MOLFUNC_EXT_VECTOR3D_H
 #include "array"
+#include "iostream"
+#include "string"
 
 using namespace std;
 

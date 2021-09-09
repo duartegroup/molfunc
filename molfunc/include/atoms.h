@@ -1,9 +1,10 @@
 #ifndef MOLFUNC_ATOMS_H
 #define MOLFUNC_ATOMS_H
-#include "vector3d.h"
 #include "string"
 #include "array"
-#include <memory>
+#include "memory"
+#include "iostream"
+#include "vector3d.h"
 
 
 using namespace std;

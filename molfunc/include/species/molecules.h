@@ -1,11 +1,12 @@
 #ifndef MOLFUNC_MOLECULES_H
 #define MOLFUNC_MOLECULES_H
-#include "atoms.h"
-#include "species.h"
-#include "graph.h"
 #include "array"
 #include "vector"
 #include "string"
+#include "iostream"
+#include "atoms.h"
+#include "species.h"
+#include "graph.h"
 
 
 using namespace std;

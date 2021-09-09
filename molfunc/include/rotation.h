@@ -1,5 +1,7 @@
 #ifndef MOLFUNC_EXT_ROTATION_H
 #define MOLFUNC_EXT_ROTATION_H
+#include "iostream"
+#include "string"
 #include "array"
 #include "grid.h"
 

@@ -1,5 +1,6 @@
 #ifndef MOLFUNC_EXT_GRAPH_H
 #define MOLFUNC_EXT_GRAPH_H
+#include "iostream"
 #include "string"
 #include "vector"
 #include <unordered_map>

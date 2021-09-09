@@ -1,7 +1,8 @@
 #ifndef MOLFUNC_EXT_FRAGMENTS_H
 #define MOLFUNC_EXT_FRAGMENTS_H
-#include <vector>
-#include <string>
+#include "vector"
+#include "string"
+#include "iostream"
 #include "atoms.h"
 #include "grid.h"
 #include "molecules.h"

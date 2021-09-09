@@ -1,5 +1,7 @@
 #ifndef MOLFUNC_EXT_SPECIES_H
 #define MOLFUNC_EXT_SPECIES_H
+#include "iostream"
+#include "string"
 #include "vector"
 #include "atoms.h"
 #include "rotation.h"
