@@ -139,6 +139,33 @@ namespace molfunc{
         return nodes[u].neighbours[0];
     }
 
+    unsigned long Graph::first_non_dummy_neighbour(unsigned long u){
+        /*********************************************************
+         * First neighbours for a particular atom index (node)
+         * that is not a dummy atom
+         *
+         * Arguments:
+         *      u (int): Atom index
+         *
+         *  Raises:
+         *      (runtime_error): If either u is not present or
+         *                       there is <1 neighbour
+         *
+         *  Returns:
+         *      (int):
+         ********************************************************/
+        if (nodes.find(u) == nodes.end()){
+            throw runtime_error("Node "+to_string(u)+" not present");
+        }
+
+        for (unsigned long idx : nodes[u].neighbours){
+            if (nodes[idx].symbol != "R") return idx;
+        }
+
+        throw out_of_range("Node "+ to_string(u)+" had no "
+                           "non-dummy neighbours");
+    }
+
     unsigned long Graph::n_neighbours(unsigned long u){
         /*********************************************************
          * Number of neighbours for a particular atom index (node)

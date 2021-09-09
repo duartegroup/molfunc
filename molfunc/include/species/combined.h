@@ -33,7 +33,7 @@ namespace molfunc{
             double repulsive_energy();
             double repulsive_energy(const Fragment& fragment);
 
-            vector<AnglePotential> angle_potentials();
+            AnglePotentials gen_angle_potentials();
 
             void build();
 

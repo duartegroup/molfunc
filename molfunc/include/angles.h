@@ -16,6 +16,10 @@ namespace molfunc{
 
             AnglePotential();
             AnglePotential(double phi0, double k);
+            AnglePotential(unsigned long idx0,
+                           unsigned long idx1,
+                           unsigned long idx2,
+                           double phi0, double k);
 
             double value(vector<Coordinate> &coordinates);
 
@@ -28,6 +32,8 @@ namespace molfunc{
             vector<AnglePotential> potentials;
 
             AnglePotentials();
+
+            void push_back(AnglePotential potential);
 
             double value(vector<Coordinate> &coordinates);
     };

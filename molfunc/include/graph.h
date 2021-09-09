@@ -57,6 +57,7 @@ namespace molfunc{
             unsigned long n_edges();
 
             unsigned long first_neighbour(unsigned long u);
+            unsigned long first_non_dummy_neighbour(unsigned long u);
             unsigned long n_neighbours(unsigned long u);
 
             string atomic_symbol(unsigned long u);

@@ -93,6 +93,32 @@ namespace molfunc{
         return radii[atomic_number()];
     }
 
+    double Atom::phi0(unsigned long n_neighbours) const {
+        /******************************************
+         * Determine an approximate bond angle
+         * between two atoms bonded to this one
+         * given a number of neighbours
+         *
+         * Returns:
+         *      (float): Optimal angle in degrees
+         *****************************************/
+        if (n_neighbours == 2){
+            if (symbol == "O") return 110.0;
+            return 180.0;
+        }
+
+        if (n_neighbours == 3){
+            if (symbol == "N" || symbol == "P") return 110.0;
+            return 120.0;
+        }
+
+        if (n_neighbours == 4) return 109.5;
+
+        if (n_neighbours == 6) return 90.0;
+
+        return 110.0;
+    }
+
     Atom3D::Atom3D(const string& symbol,  double x, double y, double z){
         /*********************************************************
          * Construct an atom from an atomic symbol and its position

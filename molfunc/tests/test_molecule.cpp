@@ -174,3 +174,18 @@ TEST_CASE("Test coordinate vectors"){
     vec.normalise();
     REQUIRE(utils::is_close(vec.length(), 1.0));
 }
+
+
+TEST_CASE("Test indexing with to without masked atoms"){
+
+    vector<Atom3D> atoms = {Atom3D("C", 0.0, 0.0, 0.0),
+                            Atom3D("R", 0.0, 0.0, 0.0),
+                            Atom3D("C", 0.0, 0.0, 0.0)};
+    auto mol = Molecule(atoms);
+
+    // Cannot index a dummy atom that is delted
+    REQUIRE_THROWS(mol.no_masked_idx(1));
+
+    REQUIRE(mol.no_masked_idx(0) == 0);
+    REQUIRE(mol.no_masked_idx(2) == 1);
+}

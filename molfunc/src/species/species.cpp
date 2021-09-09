@@ -181,5 +181,37 @@ namespace molfunc{
         rotate(R, Coordinate(coordinates[atom_idx]));
     }
 
+    unsigned long Species::no_masked_idx(unsigned long idx) {
+        /*************************************************
+         * Convert an atom index where the all atoms
+         * are present to one where the masked/dummy
+         * atoms have been deleted e.g. for atoms
+         *
+         *      [[C, 0.0, 0.0, 0.0],
+         *      [R, 0.0, 0.0, 0.0],
+         *      [C, 0.0, 0.0, 0.0]]
+         *
+         *  then: no_masked_idx(0) -> 0
+         *        no_masked_idx(2) -> 1
+         *
+         ************************************************/
+        unsigned long n_masked_atoms = 0;
+
+        for (unsigned long i=0; i<n_atoms(); i++){
+            if (atoms[i].masked){
+                if (i == idx){
+                    throw runtime_error("Cannot index a "
+                                        "masked atom");
+                }
+                n_masked_atoms += 1;
+                continue;
+            }
+
+            if (i == idx) return idx - n_masked_atoms;
+        }
+
+        throw out_of_range("No valid index present");
+    }
+
 }
 

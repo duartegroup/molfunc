@@ -21,6 +21,8 @@ namespace molfunc{
             unsigned long n_masked_atoms();
             unsigned long n_unmasked_atoms();
 
+            unsigned long no_masked_idx(unsigned long idx);
+
             double distance(unsigned long i, unsigned long j);
 
             void translate(const Vector3D &vec);

@@ -10,7 +10,8 @@ namespace molfunc{
 
     AnglePotential::AnglePotential() = default;
 
-    AnglePotential::AnglePotential(double phi0, double k) {
+    AnglePotential::AnglePotential(double phi0,
+                                   double k) {
         /**************************************************
          * Harmonic potential for an angle
          *
@@ -32,7 +33,16 @@ namespace molfunc{
         this->half_k = k / 2.0;
     }
 
-    double AnglePotential::value(vector<Coordinate> &coordinates) {
+    AnglePotential::AnglePotential(unsigned long idx0,
+                                   unsigned long idx1,
+                                   unsigned long idx2,
+                                   double phi0,
+                                   double k)
+                                   : AnglePotential(phi0, k){
+        this->atom_idxs = {idx0, idx1, idx2};
+    }
+
+    double AnglePotential::value(vector<Coordinate> &coordinates){
         /**************************************************
          * Evaluate the value of the potential
          *
@@ -40,14 +50,19 @@ namespace molfunc{
          *
          * where the angle is between 0-1-2
          **************************************************/
-        if (atom_idxs[0] > coordinates.size()
-            || atom_idxs[0] == atom_idxs[1]
-            || atom_idxs[1] > coordinates.size()
+
+        for (auto idx : atom_idxs){
+            if (idx >= coordinates.size()){
+
+                throw out_of_range("Index "+to_string(idx)+" not"
+                                   " present in these coordinates");
+            }
+        }
+        if (atom_idxs[0] == atom_idxs[1]
             || atom_idxs[1] == atom_idxs[2]
-            || atom_idxs[2] > coordinates.size()
             || atom_idxs[0] == atom_idxs[2]){
 
-            throw runtime_error("Invalid indexing for these coordinates");
+            throw runtime_error("Angle invalid, must have distinct indexes");
         }
 
         auto vec1 = coordinates[atom_idxs[0]] - coordinates[atom_idxs[1]];
@@ -62,7 +77,6 @@ namespace molfunc{
         return half_k * delta_phi * delta_phi;
     }
 
-
     AnglePotentials::AnglePotentials() = default;
 
     double AnglePotentials::value(vector<Coordinate> &coordinates) {
@@ -75,5 +89,9 @@ namespace molfunc{
 
         return total;
     }
+
+    void AnglePotentials::push_back(AnglePotential potential){
+        potentials.push_back(potential);
+    };
 }
 

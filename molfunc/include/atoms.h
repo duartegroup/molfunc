@@ -42,6 +42,8 @@ namespace molfunc{
             explicit Atom(const string& symbol);
 
             double covalent_radius() const;
+
+            double phi0(unsigned long n_neighbours) const;
     };
 
     class Atom3D: public Atom{

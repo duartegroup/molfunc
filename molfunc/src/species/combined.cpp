@@ -132,10 +132,10 @@ namespace molfunc{
                                 "fragments was not equal to the number of "
                                 "dummy (atoms_to_del) atoms in the core.");
         }
-        vector<unsigned long> dummy_idxs = core.masked_atom_idxs();
 
         for (unsigned long i=0; i<fragments.size(); i++){
-            translate_fragment(fragments[i], dummy_idxs[i]);
+            translate_fragment(fragments[i],
+                               core.masked_atom_idxs()[i]);
             exclude_rotational_space(fragments[i], 2.0);
         }
 
@@ -411,18 +411,69 @@ namespace molfunc{
          *
          ************************************************/
 
-        vector<AnglePotential> v_phi = angle_potentials();
+        auto phi_potentials = gen_angle_potentials();
 
+        // Steepest decent wrt omega vectors for all the
+        // fragments
+
+        // repulsive energy+angle energy
 
     }
 
-    vector<AnglePotential> CombinedMolecule::angle_potentials() {
+    AnglePotentials CombinedMolecule::gen_angle_potentials() {
         /*******************************************************
+         * Generate the angle potentials within this fragment
+         * which correspond to e.g C--O--H in this example.
+         * Only generates a single potential per fragment
          *
+         *          H                            H
+         *          \                            \
+         *      H---C---Ra    Rb---OH   ==>   H---C---OH
+         *         /                             /
+         *       H                              H
+         *
+         *        ^            ^
+         *      core        fragment
+         *
+         *  denoting the carbon as index 'x' and the O index 'y'
+         *  and the (O)H index 'z'
          *******************************************************/
+        auto phi_potentials = AnglePotentials();
+
+        unsigned long curr_n_atoms = core.n_unmasked_atoms();
+        unsigned long frag_idx = 0;
+
+        for (auto &frag : fragments){
+
+            auto core_dummy_idx = core.masked_atom_idxs()[frag_idx];
+            auto x_idx = core.graph.first_neighbour(core_dummy_idx);
+            auto y_idx = frag.no_masked_idx(frag.dummy_nn_idx);
+            auto z_idx = frag.no_masked_idx(
+                                        frag.graph.first_non_dummy_neighbour(frag.dummy_idx)
+                                            );
+
+            auto n_neighbours = frag.graph.n_neighbours(frag.dummy_nn_idx);
+
+            if (n_neighbours == 1){
+                // No need to define an angle potential
+                // e.g. H3C--Br
+                continue;
+            }
+
+            phi_potentials.push_back(AnglePotential(core.no_masked_idx(x_idx),
+                                                    curr_n_atoms + y_idx,
+                                                    curr_n_atoms + z_idx,
+                                                    frag.atoms[frag.dummy_nn_idx].phi0(n_neighbours),
+                                                    1.0));
+
+            // Fragments have a single masked atom
+            curr_n_atoms += frag.n_atoms() - 1;
+
+            frag_idx++;
+        }
 
 
-        return vector<AnglePotential>();
+        return phi_potentials;
     }
 
 
