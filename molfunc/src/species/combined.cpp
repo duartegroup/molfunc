@@ -27,7 +27,7 @@ namespace molfunc{
          *  frag_names: Names of the fragments e.g. {'Me', ...}
          ************************************************************/
 
-        auto core = CoreMolecule(xyz_filename,
+        auto core = CoreMolecule(core_xyz_filename,
                                  atom_idxs_to_del);
 
         vector<Fragment> fragments;
@@ -55,7 +55,7 @@ namespace molfunc{
          *  frag_xyz_filenames: Names of the fragments e.g. {'Me.xyz', ...}
          *****************************************************************/
 
-        auto core = CoreMolecule(xyz_filename,
+        auto core = CoreMolecule(core_xyz_filename,
                                  atom_idxs_to_del);
 
         vector<Fragment> fragments;

@@ -16,3 +16,5 @@ tests/__pycache__/
 molfunc/ext/cmake-build-debug/
 
 molfunc/molfunc_ext.cpp
+
+molfunc/cmake-build-debug/

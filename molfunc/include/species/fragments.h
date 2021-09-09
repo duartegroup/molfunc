@@ -28,6 +28,8 @@ namespace molfunc{
             Fragment();
             explicit Fragment(const string& xyz_filename);
             Fragment(const Fragment &fragment);
+            Fragment(vector<Atom3D> atoms, vector<string> aliases);
+
 
             void reset_coordinates();
             void cache_coordinates();
@@ -46,14 +48,14 @@ namespace molfunc{
             FragmentLib(FragmentLib const& copy) = delete;            // Not Implemented
             FragmentLib& operator=(FragmentLib const& copy) = delete; // Not Implemented
 
-            vector<Fragment> fragments;
-
             static FragmentLib& instance(){
                 // The only instance
                 // Guaranteed to be lazy initialized and destroyed correctly
                 static FragmentLib instance;
                 return instance;
             }
+
+            vector<Fragment> fragments;
 
             Fragment fragment(const string& name);
     };

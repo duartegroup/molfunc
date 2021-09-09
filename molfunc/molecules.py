@@ -98,10 +98,10 @@ def print_combined_molecule(core_xyz_filename:  str,
         atoms_to_del[i] -= 1
 
     if frag_names is not None:
-        print_combined_from_names(f'{name}.xyz',
-                                  core_xyz_filename,
+        print_combined_from_names(bytes(f'{name}.xyz', 'utf-8'),
+                                  bytes(core_xyz_filename, 'utf-8'),
                                   atoms_to_del,
-                                  frag_names)
+                                  [bytes(name, encoding='utf-8') for name in frag_names])
     else:
         print_combined_from_xyz_filenames(f'{name}.xyz',
                                           core_xyz_filename,

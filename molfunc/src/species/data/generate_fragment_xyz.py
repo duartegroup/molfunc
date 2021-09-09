@@ -1,4 +1,4 @@
-from molfunc.molecules import Molecule
+from autode import Molecule
 
 
 class Fragment:
@@ -52,11 +52,11 @@ if __name__ == '__main__':
 
         # Generate the molecules with F rather than R atoms
         molecule = Molecule(name=fragment.name,
-                            smiles=fragment.smiles.replace('*', 'F'))
+                            smiles=fragment.smiles.replace('*', 'Li'))
 
         # Change back for printing
         for atom in molecule.atoms:
-            if atom.label == 'F':
+            if atom.label == 'Li':
                 atom.label = 'R'
 
         # Print the SMILES string and the possible aliases in the xyz files

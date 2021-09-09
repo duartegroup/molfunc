@@ -4,6 +4,13 @@ project(molfunc_ext)
 set(CMAKE_CXX_STANDARD 17)
 include_directories(include/)
 
+add_custom_target(
+        run ALL
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_fragments_cpp.py ${CMAKE_CURRENT_SOURCE_DIR}
+        BYPRODUCTS src/generated_fragments.cpp
+        COMMENT "Generating fragment library"
+)
+
 
 add_library(molfunc STATIC
             include/atoms.h src/atoms.cpp
@@ -15,7 +22,8 @@ add_library(molfunc STATIC
             include/species/species.h src/species/species.cpp
             include/rotation.h src/rotation.cpp
             include/grid.h src/grid.cpp
-            include/vector3d.h src/vector3d.cpp)
+            include/vector3d.h src/vector3d.cpp
+        )
 
 target_compile_options(molfunc PRIVATE -O3)
 
