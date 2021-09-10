@@ -455,6 +455,7 @@ namespace molfunc{
                                       frag_idx,
                                       curr_energy);
 
+                    // Apply the steepest decent step
                     GridPoint omega = {0.0, 0.0, 0.0};
                     omega[axis_idx] = -grad * step_size;
                     R.update(omega);
