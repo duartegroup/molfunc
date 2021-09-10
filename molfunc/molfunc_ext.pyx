@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = [molfunc/src/atoms.cpp, molfunc/src/graph.cpp, molfunc/src/grid.cpp, molfunc/src/rotation.cpp, molfunc/src/utils.cpp, molfunc/src/vector3d.cpp, molfunc/src/species/combined.cpp, molfunc/src/species/fragments.cpp, molfunc/src/species/molecules.cpp, molfunc/src/species/species.cpp]
+# distutils: sources = [molfunc/src/atoms.cpp, molfunc/src/graph.cpp, molfunc/src/grid.cpp, molfunc/src/rotation.cpp, molfunc/src/utils.cpp, molfunc/src/vector3d.cpp, molfunc/src/species/combined.cpp, molfunc/src/species/fragments.cpp, molfunc/src/species/molecules.cpp, molfunc/src/species/species.cpp, molfunc/src/angles.cpp]
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 

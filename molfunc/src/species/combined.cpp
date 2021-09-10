@@ -179,6 +179,32 @@ namespace molfunc{
         fragment.translate(core.n_vector(x_idx, Ra_idx) * xy_dist);
     }
 
+    vector<Coordinate> CombinedMolecule::coordinates(){
+        /*********************************************
+         * Generate the coordinates of the combined
+         * molecule without any dummy atoms
+         *********************************************/
+        vector<Coordinate> coords;
+
+        // Reserve at least enough space to store all the coordinates
+        unsigned long total_n_atoms = core.n_atoms();
+        for (auto &frag : fragments) total_n_atoms += frag.n_atoms();
+        coords.reserve(total_n_atoms);
+
+        // Populate the coordinates with the unmasked core atoms
+        for (unsigned long i=0; i<core.n_atoms(); i++){
+            if (!core.atoms[i].masked) coords.push_back(core.coordinates[i]);
+        }
+        // and from each of the fragments
+        for (auto &frag : fragments){
+            for (unsigned long i=0; i<frag.n_atoms(); i++){
+                if (!frag.atoms[i].masked) coords.push_back(frag.coordinates[i]);
+            }
+        }
+
+        return coords;
+    }
+
     Molecule CombinedMolecule::to_molecule() {
         /***********************************************************
          * Construct a standard molecule from this combined molecule
@@ -208,7 +234,12 @@ namespace molfunc{
         return Molecule(atoms);
     }
 
+
     double CombinedMolecule::repulsive_energy() {
+        return repulsive_energy(coordinates());
+    }
+
+    double CombinedMolecule::repulsive_energy(const vector<Coordinate> &coords) {
         /*********************************************************
          * Calculate the repulsive energy between the fragments
          * and the core
@@ -224,24 +255,6 @@ namespace molfunc{
          * Returns:
          *      E (float): Repulsive energy
          ********************************************************/
-
-        vector<Coordinate> coords;
-
-        // Reserve at least enough space to store all the coordinates
-        unsigned long total_n_atoms = core.n_atoms();
-        for (auto &frag : fragments) total_n_atoms += frag.n_atoms();
-        coords.reserve(total_n_atoms);
-
-        // Populate the coordinates with the unmasked core atoms
-        for (unsigned long i=0; i<core.n_atoms(); i++){
-            if (!core.atoms[i].masked) coords.push_back(core.coordinates[i]);
-        }
-        // and from each of the fragments
-        for (auto &frag : fragments){
-            for (unsigned long i=0; i<frag.n_atoms(); i++){
-                if (!frag.atoms[i].masked) coords.push_back(frag.coordinates[i]);
-            }
-        }
 
         double energy = 0.0;
 
@@ -350,11 +363,9 @@ namespace molfunc{
 
     void CombinedMolecule::rotate_fragments_global(){
         /*****************************************************
-         * Rotate the fragments to minimise the total energy
-         * using the repulsion and ...
-         * TODO: angle potential
-         *
-         *
+         * Apply a stochastic global minimisation on the
+         * rotation of each fragment in the hope of finding
+         * a minimum, or something close to it
          ****************************************************/
 
         if (fragments.size() == 1){
@@ -411,16 +422,57 @@ namespace molfunc{
          *
          ************************************************/
 
-        auto phi_potentials = gen_angle_potentials();
+        gen_angle_potentials();
+        gen_fragment_idxs();
 
-        // Steepest decent wrt omega vectors for all the
-        // fragments
+        auto coords = coordinates();
+        double step_size = 0.005;
+        auto R = RotationMatrix();
 
-        // repulsive energy+angle energy
+        double delta_e_tol = 0.0001;            // Convergence criteria on ∆E
+        double prev_energy = INFINITY;
+        double curr_energy = total_energy(coords);
 
+        unsigned long iteration = 0;
+        unsigned long max_iterations = 1000;
+
+
+        while (abs(prev_energy - curr_energy) > delta_e_tol
+               && iteration < max_iterations){
+
+            int frag_idx = 0;
+
+            for (auto &frag : fragments){
+                // No need to rotate single atoms
+                if (frag.n_unmasked_atoms() == 1) continue;
+
+                // Gradient of the total energy with respect to rotation
+                // of one of the fragments
+
+                for (int axis_idx=0; axis_idx<3; axis_idx++){
+                    auto grad = dE_dw(axis_idx,
+                                      coords,
+                                      frag_idx,
+                                      curr_energy);
+
+                    GridPoint omega = {0.0, 0.0, 0.0};
+                    omega[axis_idx] = -grad * step_size;
+                    R.update(omega);
+                    rotate_fragment(frag_idx, R, coords);
+
+                    // Update energies
+                    prev_energy = curr_energy;
+                    curr_energy = total_energy(coords);
+                }
+                frag_idx++;
+            }
+            iteration++;
+        }
+
+        set_coordinates(coords);
     }
 
-    AnglePotentials CombinedMolecule::gen_angle_potentials() {
+    void CombinedMolecule::gen_angle_potentials() {
         /*******************************************************
          * Generate the angle potentials within this fragment
          * which correspond to e.g C--O--H in this example.
@@ -438,44 +490,163 @@ namespace molfunc{
          *  denoting the carbon as index 'x' and the O index 'y'
          *  and the (O)H index 'z'
          *******************************************************/
-        auto phi_potentials = AnglePotentials();
+        angle_potentials.clear();
 
         unsigned long curr_n_atoms = core.n_unmasked_atoms();
         unsigned long frag_idx = 0;
 
         for (auto &frag : fragments){
 
-            auto core_dummy_idx = core.masked_atom_idxs()[frag_idx];
-            auto x_idx = core.graph.first_neighbour(core_dummy_idx);
-            auto y_idx = frag.no_masked_idx(frag.dummy_nn_idx);
-            auto z_idx = frag.no_masked_idx(
-                                        frag.graph.first_non_dummy_neighbour(frag.dummy_idx)
-                                            );
+            auto Ra_idx = core.masked_atom_idxs()[frag_idx];
+            auto x_idx = core.graph.first_neighbour(Ra_idx);
+            auto y_idx = frag.dummy_nn_idx;
+            auto n_neighbours = frag.graph.n_neighbours(y_idx);
 
-            auto n_neighbours = frag.graph.n_neighbours(frag.dummy_nn_idx);
-
-            if (n_neighbours == 1){
+            if (n_neighbours < 2){
                 // No need to define an angle potential
-                // e.g. H3C--Br
+                // e.g. H3C--Br for a Br fragment
                 continue;
             }
 
-            phi_potentials.push_back(AnglePotential(core.no_masked_idx(x_idx),
-                                                    curr_n_atoms + y_idx,
-                                                    curr_n_atoms + z_idx,
-                                                    frag.atoms[frag.dummy_nn_idx].phi0(n_neighbours),
-                                                    1.0));
+            auto z_idx = frag.graph.first_non_dummy_neighbour(y_idx);
+
+            // Angle potential indexing is without the dummy atoms
+            auto phi_v = AnglePotential(core.no_masked_idx(x_idx),
+                                        curr_n_atoms + frag.no_masked_idx(y_idx),
+                                        curr_n_atoms + frag.no_masked_idx(z_idx),
+                                        frag.atoms[y_idx].phi0(n_neighbours),
+                                        5);
+
+            angle_potentials.push_back(phi_v);
 
             // Fragments have a single masked atom
             curr_n_atoms += frag.n_atoms() - 1;
 
             frag_idx++;
         }
-
-
-        return phi_potentials;
     }
 
+    double CombinedMolecule::total_energy(vector<Coordinate> &coords) {
+        return repulsive_energy(coords) + angle_potentials.value(coords);
+    }
+
+    void CombinedMolecule::gen_fragment_idxs() {
+        /**********************************************
+         * Generate the indexing of the fragments
+         * in the total set of coordinates/atoms
+         * without any dummy atoms e.g. for some atoms
+         *
+         *      [[O,  x, y, z],    <- core
+         *       [H,  x, y, z],
+         *       [Ra, x, y, z],
+         *       [S,  x, y, z],    <- fragment
+         *       [Rb, x, y, z],
+         *       [H,  x, y, z]]
+         *
+         * then the fragment indexing will be
+         *
+         * fragment_origin_idxs = [2]
+         * fragment_atom_idxs = [[2, 3]]
+         *********************************************/
+        fragment_origin_idxs.clear();
+        fragments_atom_idxs.clear();
+
+        unsigned long curr_n_atoms = core.n_unmasked_atoms();
+
+        for (auto &frag : fragments){
+            auto orign_idx = frag.no_masked_idx(frag.dummy_nn_idx);
+            fragment_origin_idxs.push_back(curr_n_atoms+orign_idx);
+
+            vector<unsigned long> atom_idxs;
+            unsigned long n_dummy_atoms = 0;
+
+            for (unsigned long i=0; i<frag.n_atoms(); i++){
+                if (!frag.atoms[i].masked){
+                    atom_idxs.push_back(curr_n_atoms + i - n_dummy_atoms);
+                    continue;
+                }
+                else n_dummy_atoms++;
+            }
+            fragments_atom_idxs.push_back(atom_idxs);
+
+            // Fragments have a single dummy atom
+            curr_n_atoms += frag.n_atoms() - 1;
+        }
+    }
+
+    void CombinedMolecule::rotate_fragment(int fragment_idx,
+                                           RotationMatrix &R,
+                                           vector<Coordinate> &coords) {
+        /*********************************************************
+         * Rotate a fragment within a set of coordinates about
+         * an origin
+         ********************************************************/
+
+        auto idxs = fragments_atom_idxs[fragment_idx];
+        auto origin = coords[fragment_origin_idxs[fragment_idx]];
+
+        for (auto &idx : idxs){
+            coords[idx] -= origin;
+
+            double x = coords[idx][0];
+            double y = coords[idx][1];
+            double z = coords[idx][2];
+
+            coords[idx][0] = R[0][0] * x + R[0][1] * y + R[0][2] * z;
+            coords[idx][1] = R[1][0] * x + R[1][1] * y + R[1][2] * z;
+            coords[idx][2] = R[2][0] * x + R[2][1] * y + R[2][2] * z;
+
+            coords[idx] += origin;
+        }
+    }
+
+    double CombinedMolecule::dE_dw(int axis_idx,
+                                   vector<Coordinate> &coords,
+                                   int fragment_idx,
+                                   double curr_energy) {
+        /***********************************************
+         * Calculate dE/dw_i where E is the total energy,
+         * and w is an axis of rotation for a single
+         * fragment contained within some coordinates
+         **********************************************/
+        auto R = RotationMatrix();
+
+        GridPoint omega = {0.0, 0.0, 0.0};
+
+        double d_omega = 1E-4;                   // Finite difference for grad
+        omega[axis_idx] = d_omega;
+
+        // Apply the rotation on a temporary set of coordinates
+        auto tmp_coords = vector<Coordinate>(coords);
+        R.update(omega);
+        rotate_fragment(fragment_idx, R, tmp_coords);
+
+        return (total_energy(tmp_coords) - curr_energy) / d_omega;
+    }
+
+    void CombinedMolecule::set_coordinates(vector<Coordinate> &coords) {
+        /*************************************************************
+         * Set the coordinates of the fragment and core given a set
+         * that DO NOT include any dummy atoms
+         *************************************************************/
+        unsigned long curr_atom_idx = 0;
+
+        for (unsigned long atom_idx=0; atom_idx<core.n_atoms(); atom_idx++){
+            if (!core.atoms[atom_idx].masked){
+                core.coordinates[atom_idx] = coords[curr_atom_idx];
+                curr_atom_idx++;
+            }
+        }
+
+        for (auto &frag : fragments){
+            for (unsigned long atom_idx=0; atom_idx<frag.n_atoms(); atom_idx++){
+                if (!frag.atoms[atom_idx].masked){
+                    frag.coordinates[atom_idx] = coords[curr_atom_idx];
+                    curr_atom_idx++;
+                }
+            }
+        }
+    }
 
 }
 

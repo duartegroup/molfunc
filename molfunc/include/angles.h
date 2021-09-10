@@ -26,15 +26,9 @@ namespace molfunc{
     };
 
 
-    class AnglePotentials {
+    class AnglePotentials: public vector<AnglePotential> {
 
         public:
-            vector<AnglePotential> potentials;
-
-            AnglePotentials();
-
-            void push_back(AnglePotential potential);
-
             double value(vector<Coordinate> &coordinates);
     };
 

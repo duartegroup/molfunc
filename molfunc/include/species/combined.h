@@ -26,16 +26,38 @@ namespace molfunc{
             CoreMolecule core;
             vector<Fragment> fragments;
 
+            vector<vector<unsigned long>> fragments_atom_idxs;
+            vector<unsigned long> fragment_origin_idxs;
+
+            AnglePotentials angle_potentials;
+
             CombinedMolecule();
             CombinedMolecule(CoreMolecule core,
                              vector<Fragment> fragments);
 
             double repulsive_energy();
+            static double repulsive_energy(const vector<Coordinate> &coords);
             double repulsive_energy(const Fragment& fragment);
 
-            AnglePotentials gen_angle_potentials();
+            double total_energy(vector<Coordinate> &coords);
+
+            void rotate_fragment(int fragment_idx,
+                                 RotationMatrix &R,
+                                 vector<Coordinate> &coords);
+
+            double dE_dw(int axis_idx,
+                         vector<Coordinate> &coords,
+                         int fragment_idx,
+                         double curr_energy);
+
+            void gen_angle_potentials();
+
+            void gen_fragment_idxs();
 
             void build();
+
+            vector<Coordinate> coordinates();
+            void set_coordinates(vector<Coordinate> &coords);
 
             Molecule to_molecule();
 

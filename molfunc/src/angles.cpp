@@ -77,21 +77,15 @@ namespace molfunc{
         return half_k * delta_phi * delta_phi;
     }
 
-    AnglePotentials::AnglePotentials() = default;
-
     double AnglePotentials::value(vector<Coordinate> &coordinates) {
 
         double total = 0.0;
 
-        for (auto &potential : potentials){
-            total += potential.value(coordinates);
+        for (auto & it : *this){
+            total += it.value(coordinates);
         }
 
         return total;
     }
-
-    void AnglePotentials::push_back(AnglePotential potential){
-        potentials.push_back(potential);
-    };
 }
 

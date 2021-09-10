@@ -28,7 +28,7 @@ extensions = [Extension('molfunc_ext',
                         [f'molfunc/molfunc_ext.pyx'],
                         include_dirs=['molfunc/include'],
                         language='c++',
-                        extra_compile_args=["-std=c++17", "-Wno-missing-braces"],
+                        extra_compile_args=["-std=c++17", "-Wno-missing-braces", "-O3"],
                         extra_link_args=["-std=c++17"]
                         )]
 

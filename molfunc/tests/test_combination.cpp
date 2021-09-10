@@ -196,3 +196,128 @@ TEST_CASE("Test o-ditertbutylbenzene combined construction"){
     auto mol = CombinedMolecule(core, fragments);
     REQUIRE(mol.repulsive_energy() < 30);
 }
+
+
+TEST_CASE("Test angle potentials"){
+
+    // Not a very good geometry OH fragment..
+    auto fragment = Fragment({Atom3D("O", 0.0, 0.0, 0.0),
+                              Atom3D("R", -1.0, 0.0, 0.0),
+                              Atom3D("H", 1.0, 0.0, 0.0)},
+                             {"hydroxyl"});
+
+
+    auto mol = CombinedMolecule(core_mol(),
+                                {fragment});
+
+     mol.gen_angle_potentials();
+
+    REQUIRE(mol.angle_potentials.size() == 1);
+
+    REQUIRE(mol.angle_potentials[0].atom_idxs.size() == 3);
+
+    // Indexing is without dummy atoms so the C-O-H angle
+    // should have indexes 0-4-5
+    REQUIRE(mol.angle_potentials[0].atom_idxs[0] == 0);
+    REQUIRE(mol.angle_potentials[0].atom_idxs[1] == 4);
+    REQUIRE(mol.angle_potentials[0].atom_idxs[2] == 5);
+
+    // Ensure the value can be calculated and is just positive
+    auto coords = mol.to_molecule().coordinates;
+    REQUIRE(mol.angle_potentials.value(coords) > 0);
+}
+
+
+TEST_CASE("Test angle potential value"){
+
+    auto mol = CombinedMolecule(core_mol(),
+                                {FragmentLib::instance().fragment("OH")});
+
+    // Should have a single angle potential for the C-O-H
+    REQUIRE(mol.angle_potentials.size() == 1);
+
+    // Check indexing, with OH at the end of the molecule
+    REQUIRE(mol.to_molecule().n_atoms() == 6);
+    REQUIRE(mol.to_molecule().atoms[4].symbol == "O");
+    REQUIRE(mol.to_molecule().atoms[5].symbol == "H");
+
+    vector<Coordinate> bent_coords = {{1.50280, -1.40472, -0.00011},
+                                      {1.14970, -1.18053,  1.02747},
+                                      {1.11401, -2.40488, -0.29029},
+                                      {1.11403, -0.61632, -0.68052},
+                                      {2.90096, -1.40649, -0.00816},
+                                      {3.16817, -1.61021, -0.94189}};
+
+    vector<Coordinate> lin_coords = {{1.50280, -1.40472, -0.00011},
+                                     {1.14970, -1.18053,  1.02747},
+                                     {1.11401, -2.40488, -0.29029},
+                                     {1.11403, -0.61632, -0.68052},
+                                     {2.90096, -1.40649, -0.00816},
+                                     {4.00180, -1.37777, -0.22074}};
+
+    // with an angle potential for the C-O-H the bent coordinates
+    // should be lower in energy
+    REQUIRE(mol.angle_potentials.value(bent_coords)
+            < mol.angle_potentials.value(lin_coords));
+}
+
+
+TEST_CASE("Test total energy is not none"){
+
+    auto mol = CombinedMolecule(core_mol(),
+                                {FragmentLib::instance().fragment("OH")});
+    auto coords = mol.coordinates();
+
+    REQUIRE(mol.total_energy(coords) > 0);
+
+    // Likewise if the angle potentials have been generated
+    mol.gen_angle_potentials();
+    REQUIRE(mol.total_energy(coords) > 0);
+
+    REQUIRE(mol.total_energy(coords) != NAN);
+}
+
+
+TEST_CASE("Test fragment atom indexing one fragment"){
+
+    auto frag = Fragment({Atom3D("S", 0.0, 0.0, 0.0),
+                          Atom3D("R", -1.0, 00, 0.0),
+                          Atom3D("H", 1.0, 0.0, 0.0)},
+                         {"SH"});
+
+    auto mol = CombinedMolecule(core_mol(), {frag});
+
+    REQUIRE(mol.fragment_origin_idxs.size() == 1);
+    REQUIRE(mol.fragment_origin_idxs[0] == 4);     // First atom after the core
+
+    REQUIRE(mol.fragments_atom_idxs.size() == 1);
+    // Should only have the two atoms of the fragment (S, H)
+    REQUIRE(mol.fragments_atom_idxs[0].size() == 2);
+    REQUIRE(mol.fragments_atom_idxs[0][0] == 4);
+    REQUIRE(mol.fragments_atom_idxs[0][1] == 5);
+}
+
+
+TEST_CASE("Test fragment atom indexing two fragments-"){
+
+    auto frag = Fragment({Atom3D("S", 0.0, 0.0, 0.0),
+                          Atom3D("R", -1.0, 00, 0.0),
+                          Atom3D("H", 1.0, 0.0, 0.0)},
+                         {"SH"});
+
+    auto mol = CombinedMolecule(core_mol_two_sites(),
+                                {frag, Fragment(frag)});
+    mol.gen_fragment_idxs();
+
+    REQUIRE(mol.fragment_origin_idxs.size() == 2);
+    REQUIRE(mol.fragment_origin_idxs[0] == 3);     // First atom after the core
+    REQUIRE(mol.fragment_origin_idxs[1] == 5);
+
+    REQUIRE(mol.fragments_atom_idxs.size() == 2);
+
+    // Should only have the two atoms of the fragment (S, H)
+    REQUIRE(mol.fragments_atom_idxs[1].size() == 2);
+    REQUIRE(mol.fragments_atom_idxs[1][0] == 5);
+    REQUIRE(mol.fragments_atom_idxs[1][1] == 6);
+}
+
