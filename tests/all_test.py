@@ -66,7 +66,7 @@ def test_examples_fragment():
 
     print_combined_molecule(core_xyz_filename=xyz_path,
                             atoms_to_del=[7, 9, 11],
-                            frag_names=np.random.choice(fragment_names, size=3),
+                            frag_names=fragment_names[:3],
                             name='benzene_random_subst')
 
     assert _xyz_file_is_reasonable('benzene_random_subst.xyz')
