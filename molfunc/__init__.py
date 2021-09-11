@@ -1,10 +1,5 @@
-from molfunc.molecules import CombinedMolecule
-from molfunc.molecules import FragmentMolecule
-from molfunc.molecules import CoreMolecule
+from molfunc.molecules import print_combined_molecule
+from molfunc.fragments import names as fragment_names
 
-
-__all__ = [
-    'CoreMolecule',
-    'FragmentMolecule',
-    'CombinedMolecule',
-    ]
+__all__ = ['print_combined_molecule',
+           'fragment_names']
