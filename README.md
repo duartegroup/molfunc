@@ -12,7 +12,6 @@ corresponding SMILES strings. The energy of the combined molecule is minimised w
 as such, generated structures may require further (constrained) optimisation. Possible 
 use cases include catalyst functionalisation, ligand modification and combinatorial molecule generation.
 
-***
 ## Installation
 
 ```
@@ -29,9 +28,8 @@ python setup.py install
 
 > **_NOTE:_**  Requires a modern C++ compiler.
 
-***
 ## Usage
-**molfunc** provides a minimal Python API and core CLI. To convert PH<sub>3</sub> to PMe<sub>3</sub>
+**molfunc** provides a minimal Python API and core CLI. To convert PH<sub>3</sub> to PMe<sub>3</sub> in Python:
 
 ```python
 from molfunc import print_combined_molecule
@@ -42,7 +40,7 @@ print_combined_molecule(core_xyz_filename='examples/PH3.xyz',
                         name='PMe3')
 ```
 
-Alternatively, from the command line
+or from the command line:
 
 ```
 molfunc examples/PH3.xyz -a 2 3 4 -f Me
@@ -51,7 +49,7 @@ molfunc examples/PH3.xyz -a 2 3 4 -f Me
 where in both cases all hydrogen atoms (atom indexes 2, 3, 4) are swapped for methyls. See *examples/* 
 for more examples.
 
-***
+
 ## Citation
 
 If **molfunc** us used in a publication please consider citing the [autodE paper](https://doi.org/10.1002/anie.202011941) where it's outlined:
