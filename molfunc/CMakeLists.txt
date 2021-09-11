@@ -6,7 +6,7 @@ include_directories(include/)
 
 add_custom_target(
         run ALL
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/compile_fragments.py ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/compile_fragments.py ${CMAKE_CURRENT_SOURCE_DIR}
         BYPRODUCTS src/generated_fragments.cpp
         COMMENT "Generating fragment library"
 )
