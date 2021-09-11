@@ -25,6 +25,7 @@ jobs:
       run: |
         conda activate test
         conda install --file tests/requirements.txt
+        pip install Cython
         python -m pip install . --no-deps
     - name: Test
       run: |
