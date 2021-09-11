@@ -15,6 +15,7 @@ def get_args():
     parser.add_argument('-a', '--atom_ids',
                         action='store',
                         nargs='+',
+                        default=[],
                         type=str,
                         help='<Required> List of atom ids to swap for '
                              'fragments. e.g. 1 2')
