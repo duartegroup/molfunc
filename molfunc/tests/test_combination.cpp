@@ -363,6 +363,6 @@ TEST_CASE("Test PMe3"){
     auto me = FragmentLib::instance().fragment("Me");
     auto combined = CombinedMolecule(core_pr3(), {me});
     auto coords = combined.coordinates();
-    
+
     REQUIRE(combined.total_energy(coords) < 10);
 }

@@ -72,7 +72,35 @@ def fragment_lib_present():
     return False
 
 
+def python_fragment_list_present():
+    """Does the list of fragment names exist in the python file?"""
+
+    for line in open(os.path.join(root_dir, 'fragments.py'), 'r'):
+        if len(line.split()) > 0 and line.split()[0].startswith('names'):
+            return True
+
+    return False
+
+
+def print_python_fragment_list():
+    """Print the names of all the present library fragments to fragments.py"""
+
+    fragment_names = [fn.replace('.xyz', '').lower()
+                      for fn in os.listdir(f'{root_dir}/src/species/data/')
+                      if fn.endswith('.xyz')]
+
+    with open(os.path.join(root_dir, 'fragments.py'), 'a') as py_file:
+        print('\n\n'
+              'names = ["', '", "'.join(fragment_names), '"]',
+              sep='', file=py_file)
+
+    return None
+
+
 if __name__ == '__main__':
 
     if not fragment_lib_present():
         print_fragment_lib()
+
+    if not python_fragment_list_present():
+        print_python_fragment_list()

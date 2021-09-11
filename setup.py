@@ -11,7 +11,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 def _post_install():
     from subprocess import call
     call([sys.executable,
-          'molfunc/scripts/generate_fragments_cpp.py',
+          'molfunc/scripts/compile_fragments.py',
           os.path.join(here, 'molfunc')],
          cwd=here)
 
@@ -20,7 +20,7 @@ class install(_install):
     def run(self):
         self.execute(_post_install,
                      args=(),
-                     msg="Running pre-install task")
+                     msg="Compiling fragments into source")
         _install.run(self)
 
 

@@ -1,50 +1,7 @@
 from typing import Sequence, Optional
+from molfunc.fragments import _frag_smiles_to_xyz_filenames
 from molfunc_ext import (print_combined_from_names,
                          print_combined_from_xyz_filenames)
-
-
-def _frag_smiles_to_xyz_filenames(smiles_list: Sequence[str]) -> Sequence[str]:
-    """
-    Convert a list of SMILES strings of the form ['[*]C', '[*]Br'] to a
-    list of .xyz filenames in the correct format
-
-    Arguments:
-        smiles_list (sequence(str)):
-
-    Returns:
-        (sequence(str)): xyz filenames
-
-    Raises:
-        ModuleNotFoundError: If autodE is not found
-
-        ValueError: For invalid SMILES strings
-    """
-    try:
-        from autode import Molecule
-
-    except ModuleNotFoundError:
-        raise ModuleNotFoundError('Cannot construct fragments from SMILES '
-                                  'strings without an autodE install. Try:'
-                                  '\n conda install autode -c conda-forge')
-
-    xyz_filenames = [f'{idx}.xyz' for idx, _ in enumerate(smiles_list)]
-
-    for smiles, filename in zip(smiles_list, xyz_filenames):
-
-        if '[Li]' in smiles:
-            raise NotImplementedError('Unfortunately SMILES fragments '
-                                      'containing Li cannot be built')
-        if '[*]' not in smiles:
-            raise ValueError('Fragment SMILES must contain a [*]')
-
-        mol = Molecule(smiles=smiles.replace('[*]', '[Li]'))
-        for atom in mol.atoms:
-            if atom.label == 'Li':
-                atom.label = 'R'
-
-        mol.print_xyz_file(filename=filename)
-
-    return xyz_filenames
 
 
 def print_combined_molecule(core_xyz_filename:  str,
