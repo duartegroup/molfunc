@@ -23,14 +23,14 @@ add_library(molfunc STATIC
             include/rotation.h src/rotation.cpp
             include/grid.h src/grid.cpp
             include/vector3d.h src/vector3d.cpp
-        src/angles.cpp include/angles.h)
+            include/angles.h src/angles.cpp)
 
 target_compile_options(molfunc PRIVATE -O3)
 
 find_package(Catch2 REQUIRED)
 
-
-add_executable(test
+enable_testing()
+add_executable(test_all
                tests/test_main.cpp
                tests/test_atoms.cpp
                tests/test_molecule.cpp
@@ -41,5 +41,6 @@ add_executable(test
                tests/test_rotation.cpp
                tests/test_grid.cpp)
 
-target_link_libraries(test PRIVATE Catch2::Catch2)
-target_link_libraries(test PUBLIC molfunc)
+target_link_libraries(test_all PRIVATE Catch2::Catch2)
+target_link_libraries(test_all PUBLIC molfunc)
+add_test(test_all test_all)
