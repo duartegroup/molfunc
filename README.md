@@ -14,6 +14,7 @@ use cases include catalyst functionalisation, ligand modification and combinator
 
 ## Installation
 
+TODO: 
 ```
 conda install molfunc -c conda-forge
 ```
