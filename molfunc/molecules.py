@@ -38,6 +38,10 @@ def _frag_smiles_to_xyz_filenames(smiles_list: Sequence[str]) -> Sequence[str]:
             raise ValueError('Fragment SMILES must contain a [*]')
 
         mol = Molecule(smiles=smiles.replace('[*]', '[Li]'))
+        for atom in mol.atoms:
+            if atom.label == 'Li':
+                atom.label = 'R'
+
         mol.print_xyz_file(filename=filename)
 
     return xyz_filenames
@@ -97,14 +101,18 @@ def print_combined_molecule(core_xyz_filename:  str,
                              f'must be indexed from 1')
         atoms_to_del[i] -= 1
 
+    # Cython passing strings python-> C requires encoding
+    filename = bytes(f'{name}.xyz', 'utf-8')
+    core_xyz_filename = bytes(core_xyz_filename, 'utf-8')
+
     if frag_names is not None:
-        print_combined_from_names(bytes(f'{name}.xyz', 'utf-8'),
-                                  bytes(core_xyz_filename, 'utf-8'),
+        print_combined_from_names(filename,
+                                  core_xyz_filename,
                                   atoms_to_del,
                                   [bytes(name, encoding='utf-8') for name in frag_names])
     else:
-        print_combined_from_xyz_filenames(f'{name}.xyz',
+        print_combined_from_xyz_filenames(filename,
                                           core_xyz_filename,
                                           atoms_to_del,
-                                          frag_xyz_filenames)
+                                          [bytes(fn, encoding='utf-8') for fn in frag_xyz_filenames])
     return None

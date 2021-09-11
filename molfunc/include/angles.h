@@ -1,6 +1,8 @@
 #ifndef MOLFUNC_EXT_ANGLES_H
 #define MOLFUNC_EXT_ANGLES_H
 #include "vector"
+#include "iostream"
+#include "stdexcept"
 #include "atoms.h"
 
 

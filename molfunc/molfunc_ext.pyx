@@ -22,4 +22,4 @@ def print_combined_from_names(string& xyz_filename, string& core_xyz_filename, v
     print_combined_molecule_from_names(xyz_filename, core_xyz_filename, atom_idxs_to_del, frag_names)
 
 def print_combined_from_xyz_filenames(string& xyz_filename, string& core_xyz_filename, vector[unsigned int]& atom_idxs_to_del, vector[string]& frag_xyz_filenames):
-    print_combined_molecule_from_names(xyz_filename, core_xyz_filename, atom_idxs_to_del, frag_xyz_filenames)
+    print_combined_molecule_from_xyz_filenames(xyz_filename, core_xyz_filename, atom_idxs_to_del, frag_xyz_filenames)

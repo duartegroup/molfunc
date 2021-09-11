@@ -94,6 +94,14 @@ namespace molfunc{
          *      fragments (list(Fragment)): Modified in place
          ***********************************************************/
 
+        if (core.n_masked_atoms() > 1 && fragments.size() == 1){
+            // Assume every position in the core should be functionalised
+            // with the same fragment
+            for (unsigned long i=1; i<core.n_masked_atoms(); i++){
+                fragments.emplace_back(fragments[0]);
+            }
+        }
+
         this->core = move(core);
         this->fragments = move(fragments);
 
@@ -426,10 +434,10 @@ namespace molfunc{
         gen_fragment_idxs();
 
         auto coords = coordinates();
-        double step_size = 0.005;
+        double step_size = 0.01;
         auto R = RotationMatrix();
 
-        double delta_e_tol = 0.0001;            // Convergence criteria on ∆E
+        double delta_e_tol = 0.000001;            // Convergence criteria on ∆E
         double prev_energy = INFINITY;
         double curr_energy = total_energy(coords);
 
@@ -468,6 +476,10 @@ namespace molfunc{
                 frag_idx++;
             }
             iteration++;
+
+            // Print convergence
+            //cout << "E = " << curr_energy << "\t E_angle = "
+            //     << angle_potentials.value(coords) << endl;
         }
 
         set_coordinates(coords);
@@ -516,7 +528,7 @@ namespace molfunc{
                                         curr_n_atoms + frag.no_masked_idx(y_idx),
                                         curr_n_atoms + frag.no_masked_idx(z_idx),
                                         frag.atoms[y_idx].phi0(n_neighbours),
-                                        5);
+                                        0.1);
 
             angle_potentials.push_back(phi_v);
 

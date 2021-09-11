@@ -60,6 +60,28 @@ CoreMolecule core_mol_two_sites(){
 }
 
 
+CoreMolecule core_pr3(){
+
+    ofstream xyz_file ("core.xyz");
+    if (xyz_file.is_open()){
+        xyz_file << "4\n"
+                    "\n"
+                    "P         -1.25349       -0.74286       -0.19277\n"
+                    "R          0.16170       -0.56932        0.08583\n"
+                    "R         -1.57049        0.65484        0.04481\n"
+                    "R         -1.57050       -1.14587        1.16649\n";
+        xyz_file.close();
+    }
+    else throw runtime_error("Unable to open core.xyz");
+
+    CoreMolecule core = CoreMolecule("core.xyz");
+    remove("core.xyz");
+
+    return core;
+}
+
+
+
 CoreMolecule benzene_core_mol(){
 
     ofstream xyz_file ("core.xyz");
@@ -321,3 +343,26 @@ TEST_CASE("Test fragment atom indexing two fragments-"){
     REQUIRE(mol.fragments_atom_idxs[1][1] == 6);
 }
 
+
+TEST_CASE("Test underdefined number of fragments"){
+
+    auto mol = CombinedMolecule(core_mol_two_sites(),
+                                {FragmentLib::instance().fragment("Br")});
+
+    // should not throw an exception and have the correct number of atoms
+    REQUIRE(mol.to_molecule().n_atoms() == 5);
+
+    // and a distance between the two that means the fragment
+    // has been copied
+    REQUIRE(mol.to_molecule().distance(3, 4) > 1.0);
+}
+
+
+TEST_CASE("Test PMe3"){
+
+    auto me = FragmentLib::instance().fragment("Me");
+    auto combined = CombinedMolecule(core_pr3(), {me});
+    auto coords = combined.coordinates();
+    
+    REQUIRE(combined.total_energy(coords) < 10);
+}
