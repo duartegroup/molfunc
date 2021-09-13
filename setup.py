@@ -33,7 +33,7 @@ extensions = [Extension('molfunc_ext',
                         )]
 
 setup(name='molfunc',
-      version='2.0.0',
+      version='2.0.0a0',
       packages=['molfunc'],
       license='MIT',
       package_data={"molfunc": ["include/*.h", "src/*.cpp", "include/species/*.h", "src/species/*.cpp", "scripts/*.py", "*.pyx"]},
