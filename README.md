@@ -14,7 +14,7 @@ use cases include catalyst functionalisation, ligand modification and combinator
 
 ## Installation
 ```
-pip install molfunc
+pip install molfunc==2.0.0a0
 ```
 The old Python/Cython [version](https://github.com/duartegroup/molfunc/tree/v1) is still available with `pip install molfunc=1.0.0`. Alternatively, to install from source:
 ```
