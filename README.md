@@ -1,4 +1,4 @@
- [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![pytest](https://github.com/duartegroup/molfunc/actions/workflows/pytest.yml/badge.svg)](https://github.com/duartegroup/molfunc/actions/workflows/pytest.yml) [![catch2](https://github.com/duartegroup/molfunc/actions/workflows/catch2.yml/badge.svg)](https://github.com/duartegroup/molfunc/actions/workflows/catch2.yml) [![codecov](https://codecov.io/gh/duartegroup/molfunc/branch/master/graph/badge.svg)](https://codecov.io/gh/duartegroup/molfunc) [![PyPI version](https://badge.fury.io/py/molfunc.svg)](https://badge.fury.io/py/molfunc) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ![alt text](molfunc/common/example.png)
 
