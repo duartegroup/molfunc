@@ -144,7 +144,11 @@ namespace molfunc{
         for (unsigned long i=0; i<fragments.size(); i++){
             translate_fragment(fragments[i],
                                core.masked_atom_idxs()[i]);
-            exclude_rotational_space(fragments[i], 2.0);
+
+            // Only need to exclude space from polyatomic fragments
+            if (fragments[i].n_unmasked_atoms() > 1){
+                exclude_rotational_space(fragments[i], 2.0);
+            }
         }
 
         rotate_fragments_global();
@@ -452,7 +456,10 @@ namespace molfunc{
 
             for (auto &frag : fragments){
                 // No need to rotate single atoms
-                if (frag.n_unmasked_atoms() == 1) continue;
+                if (frag.n_unmasked_atoms() == 1){
+                    frag_idx++;
+                    continue;
+                }
 
                 // Gradient of the total energy with respect to rotation
                 // of one of the fragments

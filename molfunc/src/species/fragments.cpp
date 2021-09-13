@@ -118,6 +118,8 @@ namespace molfunc{
          * on a defined atom index (i.e. coordinate in
          * space)
          ***********************************************/
+        if (n_unmasked_atoms() == 1) return;
+
         rotation_matrix.update(grid_point);
         Species::rotate(rotation_matrix, dummy_nn_idx);
     }

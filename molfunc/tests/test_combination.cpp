@@ -1,4 +1,5 @@
 #include "iostream"
+#include "cmath"
 #include <fstream>
 #include "utils.h"
 #include "species/molecules.h"
@@ -366,3 +367,21 @@ TEST_CASE("Test PMe3"){
 
     REQUIRE(combined.total_energy(coords) < 10);
 }
+
+
+TEST_CASE("Test methane + Me, F"){
+
+    auto f = FragmentLib::instance().fragment("F");
+    auto me = FragmentLib::instance().fragment("Me");
+
+    // Test the coordinates are all valid in the construction
+    auto mol = CombinedMolecule(core_mol_two_sites(),
+                                {f, me});
+
+    for (auto &coord : mol.coordinates()){
+        REQUIRE_FALSE(isnan(coord.x()));
+        REQUIRE_FALSE(isnan(coord.y()));
+        REQUIRE_FALSE(isnan(coord.z()));
+    }
+}
+
