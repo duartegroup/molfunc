@@ -16,9 +16,14 @@ for PYBIN in /opt/python/*/bin; do
     "${PYBIN}/pip" wheel /io/ --no-deps -w wheelhouse/ -v
 done
 
-# Bundle external shared libraries into the wheels
+# Bundle external shared libraries into the wheels, create
+# the many linux tag and remove the linux tag
 mkdir -p dist
 for whl in wheelhouse/*.whl; do
     repair_wheel "$whl"
+done
+
+# Finally move all the built wheels into the dist directory
+for whl in wheelhouse/*manylinux*.whl; do
     mv "$whl" dist/
 done
