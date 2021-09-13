@@ -1,4 +1,4 @@
- [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![pytest](https://github.com/duartegroup/molfunc/actions/workflows/pytest.yml/badge.svg)](https://github.com/duartegroup/molfunc/actions/workflows/pytest.yml) [![catch2](https://github.com/duartegroup/molfunc/actions/workflows/catch2.yml/badge.svg)](https://github.com/duartegroup/molfunc/actions/workflows/catch2.yml) [![codecov](https://codecov.io/gh/duartegroup/molfunc/branch/master/graph/badge.svg)](https://codecov.io/gh/duartegroup/molfunc) [![PyPI version](https://badge.fury.io/py/molfunc.svg)](https://badge.fury.io/py/molfunc) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ![alt text](molfunc/common/example.png)
 
@@ -13,14 +13,10 @@ as such, generated structures may require further (constrained) optimisation. Po
 use cases include catalyst functionalisation, ligand modification and combinatorial molecule generation.
 
 ## Installation
-
-TODO: 
 ```
 pip install molfunc
 ```
-The Python/Cython [version](https://github.com/duartegroup/molfunc/tree/v1) is still available with `pip install molfunc=1.0.0`
-
-To install from source:
+The old Python/Cython [version](https://github.com/duartegroup/molfunc/tree/v1) is still available with `pip install molfunc=1.0.0`. Alternatively, to install from source:
 ```
 git clone https://github.com/duartegroup/molfunc.git
 cd molfunc/
