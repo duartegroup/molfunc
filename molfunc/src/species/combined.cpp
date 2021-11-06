@@ -11,6 +11,35 @@ using namespace std;
 
 namespace molfunc{
 
+    void print_all_combined_molecules(const string& xyz_filename,
+                                      const string& core_xyz_filename,
+                                      const vector<unsigned int>& atom_idxs_to_del){
+        /******************************************************************
+         * Generate all possible combinations of a combined molecule
+         * based on the core and the current fragment library e.g.
+         * for a single atom to delete then generate
+         * N = FragmentLib::instance().size() number of combined molecules,
+         * for m atom to delete then will generate N^m structures.
+         *
+         *
+         *  xyz_filename: Name of the generated .xyz file
+         *
+         *  core_xyz_filename:
+         *
+         *  atom_idxs_to_del: Atom indexes to delete
+         ****************************************************************/
+
+        auto core = CoreMolecule(core_xyz_filename,
+                                 atom_idxs_to_del);
+
+        unsigned long n_del_atoms = atom_idxs_to_del.size();
+
+        for (auto &fragments: FragmentLib::fragments_product(n_del_atoms)){
+            CombinedMolecule(core, fragments).to_molecule().appendxyz_file(xyz_filename);
+        }
+
+    }
+
     void print_combined_molecule_from_names(const string& xyz_filename,
                                             const string& core_xyz_filename,
                                             const vector<unsigned int>& atom_idxs_to_del,

@@ -82,7 +82,6 @@ CoreMolecule core_pr3(){
 }
 
 
-
 CoreMolecule benzene_core_mol(){
 
     ofstream xyz_file ("core.xyz");
@@ -385,3 +384,8 @@ TEST_CASE("Test methane + Me, F"){
     }
 }
 
+
+TEST_CASE("Test methane + all construction"){
+    //
+
+}
