@@ -7,7 +7,6 @@
 #include "string"
 
 
-
 namespace molfunc{
 
     void print_all_combined_molecules(const string& xyz_filename,

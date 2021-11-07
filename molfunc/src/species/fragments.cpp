@@ -164,11 +164,11 @@ namespace molfunc{
          *      (runtime_error):
          ********************************************************/
 
-        auto n_to_generate = pow(FragmentLib::instance().fragments.size(), n);
+        auto n_to_generate = (int)pow(FragmentLib::instance().fragments.size(), n);
 
         if (n_to_generate > 1000){
             throw runtime_error("Tried to generated "+to_string(n_to_generate)+
-                                " fragment combinations, likely unwanted");
+                                " fragment combinations, unsupported. Must be <1000");
         }
 
         vector<vector<Fragment>> pools = {};

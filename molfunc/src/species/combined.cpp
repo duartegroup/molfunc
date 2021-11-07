@@ -29,8 +29,7 @@ namespace molfunc{
          *  atom_idxs_to_del: Atom indexes to delete
          ****************************************************************/
 
-        auto core = CoreMolecule(core_xyz_filename,
-                                 atom_idxs_to_del);
+        auto core = CoreMolecule(core_xyz_filename, atom_idxs_to_del);
 
         unsigned long n_del_atoms = atom_idxs_to_del.size();
         auto fragments_vector = FragmentLib::instance().fragments_n_repeats(n_del_atoms);

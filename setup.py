@@ -16,7 +16,7 @@ def _post_install():
          cwd=here)
 
 
-class install(_install):
+class Install(_install):
     def run(self):
         self.execute(_post_install,
                      args=(),
@@ -29,18 +29,19 @@ extensions = [Extension('molfunc_ext',
                         include_dirs=['molfunc/include'],
                         language='c++',
                         extra_compile_args=["-std=c++17", "-Wno-missing-braces", "-O3"],
-                        extra_link_args=["-std=c++17"]
-                        )]
+                        extra_link_args=["-std=c++17"])
+              ]
 
 setup(name='molfunc',
-      version='2.0.0a0',
+      version='2.0.0b0',
       packages=['molfunc'],
       license='MIT',
-      package_data={"molfunc": ["include/*.h", "src/*.cpp", "include/species/*.h", "src/species/*.cpp", "scripts/*.py", "*.pyx"]},
+      package_data={"molfunc": ["include/*.h", "src/*.cpp", "include/species/*.h",
+                                "src/species/*.cpp", "scripts/*.py", "*.pyx"]},
       build_requires=["Cython"],
       author='Tom Young',
       url='https://github.com/duartegroup/molfunc',
-      cmdclass={'install': install},
+      cmdclass={'install': Install},
       entry_points={'console_scripts': ['molfunc = molfunc.molfunc:main']},
       ext_modules=cythonize(extensions, language_level="3"),
       author_email='tom.young@chem.ox.ac.uk',
