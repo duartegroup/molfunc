@@ -6,6 +6,10 @@ from libcpp.vector cimport vector
 
 cdef extern from "include/species/combined.h" namespace "molfunc":
 
+    void print_all_combined_molecules(string& xyz_filename,
+                                      string& core_xyz_filename,
+                                      vector[unsigned int]& atom_idxs_to_del) except +
+
     void print_combined_molecule_from_names(string& xyz_filename,
                                             string& core_xyz_filename,
                                             vector[unsigned int]& atom_idxs_to_del,
@@ -18,8 +22,11 @@ cdef extern from "include/species/combined.h" namespace "molfunc":
                                                     vector[string]& frag_xyz_filenames) except +
 
 
-def print_combined_from_names(string& xyz_filename, string& core_xyz_filename, vector[unsigned int]& atom_idxs_to_del, vector[string]& frag_names):
+def c_print_all_combined_molecules(string& xyz_filename, string& core_xyz_filename, vector[unsigned int]& atom_idxs_to_del):
+    print_all_combined_molecules(xyz_filename, core_xyz_filename, atom_idxs_to_del)
+
+def c_print_combined_from_names(string& xyz_filename, string& core_xyz_filename, vector[unsigned int]& atom_idxs_to_del, vector[string]& frag_names):
     print_combined_molecule_from_names(xyz_filename, core_xyz_filename, atom_idxs_to_del, frag_names)
 
-def print_combined_from_xyz_filenames(string& xyz_filename, string& core_xyz_filename, vector[unsigned int]& atom_idxs_to_del, vector[string]& frag_xyz_filenames):
+def c_print_combined_from_xyz_filenames(string& xyz_filename, string& core_xyz_filename, vector[unsigned int]& atom_idxs_to_del, vector[string]& frag_xyz_filenames):
     print_combined_molecule_from_xyz_filenames(xyz_filename, core_xyz_filename, atom_idxs_to_del, frag_xyz_filenames)

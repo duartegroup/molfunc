@@ -5,8 +5,10 @@ import numpy as np
 from subprocess import Popen
 from scipy.spatial import distance_matrix
 from autode import Molecule
-from molfunc import print_combined_molecule, fragment_names
 from molfunc.molfunc import main
+from molfunc import (print_combined_molecule,
+                     print_all_combined_molecules,
+                     fragment_names)
 
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -47,6 +49,16 @@ def test_cli():
 def test_main():
     # For the example benzene -> toluene modification call the main molfunc
     sys.argv[1:] = [xyz_path, '-a', '7', '-f', 'Me']
+    main()
+
+    toluene_path = os.path.join(here, 'data', 'benzene_mod.xyz')
+    assert os.path.exists(toluene_path)
+    os.remove(toluene_path)
+
+
+def test_main_all():
+    # For the example benzene -> toluene modification call the main molfunc
+    sys.argv[1:] = [xyz_path, '-a', '7', '--all']
     main()
 
     toluene_path = os.path.join(here, 'data', 'benzene_mod.xyz')
@@ -131,3 +143,32 @@ def test_not_ok_core():
         print_combined_molecule(core_xyz_filename=os.path.join(here, 'data', 'benzene.xyz'),
                                 atoms_to_del=[0],
                                 frag_names=['Me'])
+
+
+def test_all_combination():
+    """Test all possible combinations can be generated reasonably"""
+
+    ph3_filepath = os.path.join(here, 'data', 'PH3.xyz')
+    print_all_combined_molecules(ph3_filepath,
+                                 atoms_to_del=[2],
+                                 name='tmp')
+
+    assert os.path.exists('tmp.xyz')
+
+    xyz_lines = []
+    for line in open('tmp.xyz', 'r'):
+
+        xyz_lines.append(line)
+
+        if len(line.split()) != 1 or len(xyz_lines) <= 1:
+            continue
+
+        with open('single_tmp.xyz', 'w') as single_xyz_file:
+            for _line in xyz_lines[:-1]:
+                print(_line, file=single_xyz_file, end='')
+
+        assert _xyz_file_is_reasonable('single_tmp.xyz')
+        xyz_lines = xyz_lines[-1:]
+
+    os.remove('tmp.xyz')
+    os.remove('single_tmp.xyz')
