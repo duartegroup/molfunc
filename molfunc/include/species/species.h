@@ -36,7 +36,10 @@ namespace molfunc{
             vector<unsigned long> masked_atom_idxs();
 
             void print_xyz_file(const string& filename);
+            void append_xyz_file(const string& filename);
 
+    private:
+        void print_xyz_file(const string& filename, bool append);
     };
 }
 

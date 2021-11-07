@@ -1,10 +1,9 @@
 #include "species/species.h"
-#include <fstream>
+#include "fstream"
 #include "string"
-#include <iomanip>
+#include "iomanip"
 #include "cmath"
 #include "memory"
-
 #include "iostream"
 
 
@@ -101,7 +100,8 @@ namespace molfunc{
         return (coordinates[j] - coordinates[i]) / l;
     }
 
-    void Species::print_xyz_file(const string& filename){
+    void Species::print_xyz_file(const string& filename,
+                                 bool append){
         /*********************************************************
          * Generate a standard .xyz file for a molecule
          *
@@ -113,7 +113,9 @@ namespace molfunc{
             throw runtime_error("Could not print a .xyz file- had no atoms");
         }
 
-        ofstream xyz_file (filename);
+        ofstream xyz_file;
+        if (append) xyz_file.open(filename, ios_base::app);
+        else xyz_file.open(filename);
 
         if (xyz_file.is_open()){
 
@@ -139,6 +141,16 @@ namespace molfunc{
         }
 
         else throw runtime_error("Cannot open "+filename);
+    }
+
+    void Species::print_xyz_file(const string& filename){
+        // Print the .xyz file of this molecule, will override
+        print_xyz_file(filename, false);
+    }
+
+    void Species::append_xyz_file(const string &filename) {
+        // Append to a (possibly) existing .xyz file
+        print_xyz_file(filename, true);
     }
 
     void Species::rotate(const RotationMatrix &R) {

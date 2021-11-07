@@ -34,9 +34,9 @@ namespace molfunc{
 
         unsigned long n_del_atoms = atom_idxs_to_del.size();
 
-        for (auto &fragments: FragmentLib::fragments_product(n_del_atoms)){
-            CombinedMolecule(core, fragments).to_molecule().appendxyz_file(xyz_filename);
-        }
+        //for (auto &fragments: FragmentLib::fragments_product(n_del_atoms)){
+        //    CombinedMolecule(core, fragments).to_molecule().append_xyz_file(xyz_filename);
+        //}
 
     }
 
