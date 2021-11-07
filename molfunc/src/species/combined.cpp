@@ -33,11 +33,12 @@ namespace molfunc{
                                  atom_idxs_to_del);
 
         unsigned long n_del_atoms = atom_idxs_to_del.size();
+        auto fragments_vector = FragmentLib::instance().fragments_n_repeats(n_del_atoms);
 
-        //for (auto &fragments: FragmentLib::fragments_product(n_del_atoms)){
-        //    CombinedMolecule(core, fragments).to_molecule().append_xyz_file(xyz_filename);
-        //}
-
+        for (auto &fragments: fragments_vector){
+            auto mol = CombinedMolecule(core, fragments).to_molecule();
+            mol.append_xyz_file(xyz_filename);
+        }
     }
 
     void print_combined_molecule_from_names(const string& xyz_filename,

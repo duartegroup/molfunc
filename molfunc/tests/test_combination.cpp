@@ -386,6 +386,18 @@ TEST_CASE("Test methane + Me, F"){
 
 
 TEST_CASE("Test methane + all construction"){
-    //
+    // Ensure that a series of fragments can be added
+    // and the structures appended to the same .xyz file
 
+    print_core_xyz();
+    print_all_combined_molecules("tmp.xyz",
+                                 "core.xyz",
+                                 {1});
+
+    ifstream xyz_file("tmp.xyz");
+    auto n_lines = count(std::istreambuf_iterator<char>(xyz_file),
+                         istreambuf_iterator<char>(), '\n');
+
+    // Should be plenty of structures!
+    REQUIRE(n_lines > 100);
 }

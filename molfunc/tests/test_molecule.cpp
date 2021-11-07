@@ -198,10 +198,11 @@ TEST_CASE("Test appending to a xyz file"){
     mol.append_xyz_file("tmp.xyz");
     mol.append_xyz_file("tmp.xyz");
 
-    ifstream inFile("tmp.xyz");
-    auto n_lines = count(std::istreambuf_iterator<char>(inFile),
+    ifstream xyz_file("tmp.xyz");
+    auto n_lines = count(std::istreambuf_iterator<char>(xyz_file),
                     istreambuf_iterator<char>(), '\n');
 
     // Appended file needs to have at least 2, 5 line sets of coordinates in
     REQUIRE(n_lines > 10);
+    remove("tmp.xyz");
 }
