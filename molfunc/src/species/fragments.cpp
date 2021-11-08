@@ -174,7 +174,7 @@ namespace molfunc{
         vector<vector<Fragment>> pools = {};
         pools.reserve(n);
 
-        for (auto i = 0; i < n; i++){
+        for (unsigned long i = 0; i < n; i++){
             auto p = fragments;
             pools.push_back(p);
         }
