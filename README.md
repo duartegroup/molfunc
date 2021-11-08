@@ -14,7 +14,7 @@ use cases include catalyst functionalisation, ligand modification and combinator
 
 ## Installation
 ```
-pip install molfunc==2.0.0a0
+pip install molfunc==2.0.0b0
 ```
 The old Python/Cython [version](https://github.com/duartegroup/molfunc/tree/v1) is still available with `pip install molfunc=1.0.0`. Alternatively, to install from source:
 ```
@@ -45,7 +45,11 @@ molfunc examples/PH3.xyz -a 2 3 4 -f Me
 ```
 
 where in both cases all hydrogen atoms (atom indexes 2, 3, 4) are swapped for methyls. See *examples/* 
-for more examples.
+for more examples. Functionalising with all combinations of fragments is also possible with
+
+```
+molfunc examples/PH3.xyz -a 2 --all
+```
 
 
 ## Citation
