@@ -116,7 +116,7 @@ TEST_CASE("Test repeated fragment combinations"){
     /* Should be able to generate all possible
      of fragments with a defined number of repeats
      e.g a fragment library of size 2 should generate:
-     n = 1   --> [[frag1, frag2]]
+     n = 1   --> [[frag1], [frag2]]
      n = 2   --> [[frag1, frag1],
                   [frag1, frag2],
                   [frag2, frag1],
