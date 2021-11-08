@@ -154,15 +154,19 @@ namespace molfunc{
     }
 
     vector<vector<Fragment>> FragmentLib::fragments_n_repeats(unsigned long n){
-        /*********************************************************
-         * Generate a
+        /******************************************************************
+         * Generate a list (vector) of fragments with a specific
+         * number of repeats of all fragments in the library.
+         * This function is an implementation of a cartesian product
+         * from itertools in Python (https://docs.python.org/3/library/itertools.html)
+         * returns (N^n, n) matrix, where N fragments exist in the library.
          *
          * Arguments:
          *      n (str): Number of repeats to perform
          *
          * Raises:
          *      (runtime_error):
-         ********************************************************/
+         *****************************************************************/
 
         auto n_to_generate = (int)pow(FragmentLib::instance().fragments.size(), n);
 
@@ -175,7 +179,7 @@ namespace molfunc{
         pools.reserve(n);
 
         for (unsigned long i = 0; i < n; i++){
-            auto p = fragments;
+            auto p = fragments;  // Copy of the fragments
             pools.push_back(p);
         }
 
