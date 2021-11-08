@@ -110,3 +110,30 @@ TEST_CASE("Test coordinate reset"){
     fragment.reset_coordinates();
     REQUIRE(utils::is_close(fragment.coordinates[0].x(), 0.92450));
 }
+
+
+TEST_CASE("Test repeated fragment combinations"){
+    /* Should be able to generate all possible
+     of fragments with a defined number of repeats
+     e.g a fragment library of size 2 should generate:
+     n = 1   --> [[frag1], [frag2]]
+     n = 2   --> [[frag1, frag1],
+                  [frag1, frag2],
+                  [frag2, frag1],
+                  [frag2, frag2]]
+    */
+
+    auto n_fragments = FragmentLib::instance().fragments.size();
+
+    auto vec_fragments = FragmentLib::instance().fragments_n_repeats(1);
+    REQUIRE(vec_fragments.size() == n_fragments);
+    REQUIRE(vec_fragments[0].size() == 1);
+
+    vec_fragments = FragmentLib::instance().fragments_n_repeats(2);
+
+    REQUIRE(vec_fragments.size() == n_fragments*n_fragments);
+
+    // Don't generate > 24 million combinations..
+    REQUIRE_THROWS(FragmentLib::instance().fragments_n_repeats(5));
+}
+

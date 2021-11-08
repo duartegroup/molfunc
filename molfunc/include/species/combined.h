@@ -7,8 +7,11 @@
 #include "string"
 
 
-
 namespace molfunc{
+
+    void print_all_combined_molecules(const string& xyz_filename,
+                                      const string& core_xyz_filename,
+                                      const vector<unsigned int>& atom_idxs_to_del);
 
     void print_combined_molecule_from_names(const string& xyz_filename,
                                             const string& core_xyz_filename,

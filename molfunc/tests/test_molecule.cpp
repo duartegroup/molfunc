@@ -189,3 +189,20 @@ TEST_CASE("Test indexing with to without masked atoms"){
     REQUIRE(mol.no_masked_idx(0) == 0);
     REQUIRE(mol.no_masked_idx(2) == 1);
 }
+
+
+TEST_CASE("Test appending to a xyz file"){
+
+    auto mol = methane_molecule();
+
+    mol.append_xyz_file("tmp.xyz");
+    mol.append_xyz_file("tmp.xyz");
+
+    ifstream xyz_file("tmp.xyz");
+    auto n_lines = count(std::istreambuf_iterator<char>(xyz_file),
+                    istreambuf_iterator<char>(), '\n');
+
+    // Appended file needs to have at least 2, 5 line sets of coordinates in
+    REQUIRE(n_lines > 10);
+    remove("tmp.xyz");
+}

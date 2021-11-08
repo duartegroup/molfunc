@@ -58,6 +58,8 @@ namespace molfunc{
             vector<Fragment> fragments;
 
             Fragment fragment(const string& name);
+
+            vector<vector<Fragment>> fragments_n_repeats(unsigned long n);
     };
 
 

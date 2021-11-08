@@ -1,5 +1,6 @@
 #include "iostream"
-#include <algorithm>
+#include "algorithm"
+#include "math.h"
 #include "species/fragments.h"
 #include "utils.h"
 
@@ -151,8 +152,62 @@ namespace molfunc{
         throw domain_error("Failed to find a fragment with an alias "+
                            name+" in the library");
     }
-}
 
+    vector<vector<Fragment>> FragmentLib::fragments_n_repeats(unsigned long n){
+        /******************************************************************
+         * Generate a list (vector) of fragments with a specific
+         * number of repeats of all fragments in the library.
+         * This function is an implementation of a cartesian product
+         * from itertools in Python (https://docs.python.org/3/library/itertools.html)
+         * returns (N^n, n) matrix, where N fragments exist in the library.
+         *
+         * Arguments:
+         *      n (str): Number of repeats to perform
+         *
+         * Raises:
+         *      (runtime_error):
+         *****************************************************************/
+
+        auto n_to_generate = (int)pow(FragmentLib::instance().fragments.size(), n);
+
+        if (n_to_generate > 1000){
+            throw runtime_error("Tried to generated "+to_string(n_to_generate)+
+                                " fragment combinations, unsupported. Must be <1000");
+        }
+
+        vector<vector<Fragment>> pools = {};
+        pools.reserve(n);
+
+        for (unsigned long i = 0; i < n; i++){
+            auto p = fragments;  // Copy of the fragments
+            pools.push_back(p);
+        }
+
+        vector<vector<Fragment>> result = {{}};
+
+        for (auto &pool : pools) {
+
+            if (result.empty()){
+                result.push_back(fragments);
+                continue;
+            }
+
+            vector<vector<Fragment>> tmp = {};
+            for (auto y: pool) {
+                for (auto x: result) {     // Requires copy?!
+                    x.push_back(y);
+                    tmp.push_back(x);
+                }
+            }
+            result = tmp;
+        }
+
+        return result;
+    }
+}
+/* -----------------------------------------------
+ Below data is automatically generated
+ -----------------------------------------------*/
 
 namespace molfunc{
      FragmentLib::FragmentLib(){
